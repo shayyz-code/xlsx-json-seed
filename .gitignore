@@ -1,0 +1,65 @@
+# =====================
+# CMake build folders
+# =====================
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/Makefile
+/*.cmake
+
+# =====================
+# CMake user preset
+# =====================
+CMakeUserPresets.json
+
+# =====================
+# vcpkg installed libraries
+# =====================
+/vcpkg/installed/
+/vcpkg/buildtrees/
+/vcpkg/packages/
+/vcpkg/downloads/
+/vcpkg/tools/
+
+# =====================
+# IDE / editor files
+# =====================
+*.swp
+*.swo
+*.user
+*.sln
+*.vcxproj*
+*.idea/
+*.vscode/
+*.DS_Store
+*.code-workspace
+
+# =====================
+# Executables / binaries
+# =====================
+*.exe
+*.out
+*.app
+*.obj
+*.o
+*.pdb
+*.ilk
+
+# =====================
+# Logs / temp files
+# =====================
+*.log
+*.tmp
+*.temp
+
+# =====================
+# Generated files
+# =====================
+*.vsprops
+*.tlog/
+*.lastbuildstate
+*.ipch/
+*.iobj
+*.ipdb
+*.idb

@@ -1,0 +1,17 @@
+input: "example/input.xlsx"
+output: "example/result"
+export_csv: true
+
+operations:
+  - type: split-column
+    source: B
+    delimiter: "-"
+    targets: [D, E]
+
+  - type: uppercase-column
+    column: C
+
+  - type: replace-in-column
+    column: C
+    find: " "
+    replace: " - "

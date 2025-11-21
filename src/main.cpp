@@ -1,0 +1,107 @@
+#include <iostream>
+#include <xlnt/xlnt.hpp>
+#include "config.hpp"
+#include "operations.hpp"
+#include "csv.hpp"
+#include <CLI/CLI.hpp>
+
+// color macros
+#define RESET   "\033[0m"
+#define BOLD    "\033[1m"
+
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[33m"
+#define BLUE    "\033[34m"
+#define PURPLE  "\033[35m"
+#define CYAN    "\033[36m"
+#define WHITE   "\033[37m"
+#define MAGENTA "\033[95m"
+
+
+int main(int argc, char **argv)
+{
+    CLI::App app { BOLD CYAN "XLSX Seed - A tool to process XLSX files using YAML scripts, primarily for Database Seeding" RESET };
+
+    std::string config_path;
+
+    app.add_option("-c, --config", config_path, "Path to YAML config")
+        ->required()
+        ->check(CLI::ExistingFile);
+
+    CLI11_PARSE(app, argc, argv);
+
+
+    std::cout << BOLD BLUE      "─────────────────────────────────────────────────────────\n" RESET;
+    std::cout << BOLD CYAN      "   XLSX-SEED — Process Excel for Data Seeding via YAML   \n" RESET;
+    std::cout << BOLD PURPLE    "                       by shayyz-code                    \n" RESET;
+    std::cout << BOLD BLUE      "─────────────────────────────────────────────────────────\n" RESET;
+
+    Config cfg = load_config(config_path);
+
+    std::cout << BOLD WHITE "# Input File: " RESET << GREEN << cfg.input_file << RESET << "\n";
+    std::cout << BOLD WHITE "# Output File: " RESET << GREEN << cfg.output_file << RESET << "\n";
+    std::cout << BOLD WHITE "# Export CSV: " RESET << GREEN << (cfg.export_csv ? "true" : "false") << RESET << "\n\n";
+    std::cout << BOLD WHITE "*  Running operations..." RESET << "\n\n";
+
+    xlnt::workbook wb;
+    wb.load(cfg.input_file);
+    auto ws = wb.active_sheet();
+
+    for (auto &op : cfg.operations)
+    {
+        if (op.type == "split-column")
+        {
+            auto src = op.node["source"].as<std::string>();
+            auto delim = op.node["delimiter"].as<std::string>();
+            auto targetNodes = op.node["targets"];
+
+            std::vector<std::string> targets;
+
+            for (const auto &t : targetNodes)
+                targets.push_back(t.as<std::string>());
+
+            std::cout << GREEN "✔ " RESET YELLOW "split-column" RESET
+                      << " (" << CYAN << src << RESET << ")\n";
+
+            split_column_xlsx(ws, src, delim, targets);
+        }
+        else if (op.type == "uppercase-column")
+        {
+            auto col = op.node["column"].as<std::string>();
+
+            std::cout << GREEN "✔ " RESET YELLOW "uppercase-column" RESET
+                      << " (" << CYAN << col << RESET << ")\n";
+            uppercase_column_xlsx(ws, col);
+        }
+        else if (op.type == "replace-in-column")
+        {
+            auto col = op.node["column"].as<std::string>();
+            auto f = op.node["find"].as<std::string>();
+            auto r = op.node["replace"].as<std::string>();
+
+             std::cout << GREEN "✔ " RESET YELLOW "replace-in-column" RESET
+                      << " (" << CYAN << col << RESET << ") "
+                      << MAGENTA << "\"" << f << "\"" << RESET
+                      << " → "
+                      << GREEN << "\"" << r << "\"" << RESET << "\n";
+            replace_in_column_xlsx(ws, col, f, r);
+        }
+        else
+        {
+            std::cerr << RED "✘ Unknown operation type: " << op.type << RESET << "\n";
+        }
+    }
+
+    if (cfg.export_csv)
+    {
+        save_csv(ws, cfg.output_file + ".csv");
+    }
+    else
+    {
+        wb.save(cfg.output_file + ".xlsx");
+    }
+    
+    std::cout << "\n" << BOLD GREEN "✨ Finished seeding!" RESET "\n";
+    std::cout << BOLD BLUE "─────────────────────────────────────────────────────────\n" RESET;
+}
