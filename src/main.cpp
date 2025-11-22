@@ -87,6 +87,23 @@ int main(int argc, char **argv)
                       << GREEN << "\"" << r << "\"" << RESET << "\n";
             replace_in_column_xlsx(ws, col, f, r);
         }
+        else if (op.type == "transform-row")
+        {
+            auto row = op.node["row"].as<std::uint32_t>();
+            auto to = op.node["to"].as<std::string>();
+            auto delim = op.node["delimiter"].as<std::string>();
+
+             std::cout << GREEN "✔ " RESET YELLOW "transform-row" RESET
+                      << " (" << CYAN << row << RESET << ") "
+                      << MAGENTA << "\"" << "to" << "\"" << RESET
+                      << " → "
+                      << GREEN << "\"" << "with " + delim << "\"" << RESET << "\n";
+
+            if (!delim.empty())
+                transform_row_xlsx(ws, row, to, delim[0]);
+            else
+                transform_row_xlsx(ws, row, to);
+        }
         else
         {
             std::cerr << RED "✘ Unknown operation type: " << op.type << RESET << "\n";

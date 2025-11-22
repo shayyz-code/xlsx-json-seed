@@ -1,13 +1,8 @@
 # xlsx-seed
 
-<p align="left">
-  <img src="https://img.shields.io/badge/language-C++20-blue.svg" />
-  <img src="https://img.shields.io/badge/build-CMake-informational.svg" />
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey.svg" />
-  <img src="https://img.shields.io/badge/license-MIT-green.svg" />
-  <img src="https://img.shields.io/badge/status-active-brightgreen.svg" />
-  <img src="https://img.shields.io/github/last-commit/shayyz-code/xlsx-seed" />
-</p>
+![c++](https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
+![cmake](https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white)
+![MIT](https://img.shields.io/badge/MIT-green?style=for-the-badge)
 
 A Blazingly Fast and Flexible **CLI tool for processing and automating Excel (.xlsx) data for Database Seeding** using a simple **YAML instruction file**.
 

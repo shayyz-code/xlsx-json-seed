@@ -1,5 +1,5 @@
 {
   "name": "xlsx-seed",
   "version": "0.1.0",
-  "dependencies": ["xlnt", "yaml-cpp", "cli11"]
+  "dependencies": ["xlnt", "yaml-cpp", "cli11", "catch2"]
 }

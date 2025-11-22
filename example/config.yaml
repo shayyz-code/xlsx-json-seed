@@ -8,10 +8,15 @@ operations:
     delimiter: "-"
     targets: [D, E]
 
-  - type: uppercase-column
-    column: C
+  # - type: uppercase-column
+  #   column: C
 
   - type: replace-in-column
     column: C
-    find: " "
-    replace: " - "
+    find: "-"
+    replace: ","
+
+  - type: transform-row
+    row: 1
+    to: "snake_case"
+    delimiter: " "
