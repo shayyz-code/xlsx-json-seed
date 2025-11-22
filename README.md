@@ -98,7 +98,7 @@ Feel free to open an issue to discuss ideas.
 
 Thanks goes to these wonderful people ✨
 
-![Contributors](https://contrib.rocks/image?repo=shayyz-code/xlsx-seed)
+![Contributors](https://contrib.rocks/image?repo=shayyz-code/xlsx-json-seed)
 
 ## License
 
