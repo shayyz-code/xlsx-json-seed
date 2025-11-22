@@ -7,7 +7,10 @@ Config load_config(const std::string &path)
 
     cfg.input_file = root["input"].as<std::string>();
     cfg.output_file = root["output"].as<std::string>();
-    cfg.export_csv = root["export_csv"].as<bool>(false);
+    cfg.export_csv = root["export-csv"].as<bool>(false);
+    cfg.export_xlsx = root["export-xlsx"].as<bool>(false);
+    cfg.header_row = root["header-row"].as<std::uint32_t>(1);
+    cfg.first_data_row = root["first-data-row"].as<std::uint32_t>(2);
 
     for (const auto &op : root["operations"])
     {

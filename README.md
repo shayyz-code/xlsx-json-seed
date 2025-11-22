@@ -13,7 +13,7 @@ Built in **C++**, powered by **xlnt**, and **yaml-cpp**.
 ## Features
 
 - Read `.xlsx` Excel files
-- Export to **XLSX** or **CSV**
+- Export to **JSON**, **CSV** or back to **XLSX**
 - Automate transformations via **YAML scripting**
 - Split, uppercase, replace, and more
 - Colorized CLI
@@ -67,13 +67,17 @@ config.yaml and input.xlsx can be found in [./example](./example).
 ```yaml
 input: "example/input.xlsx"
 output: "example/result"
-export_csv: true
+header-row: 1
+first-data-row: 2
+
+export-csv: true
 
 operations:
   - type: split-column
     source: B
     delimiter: "-"
-    targets: [D, E]
+    split-to: [D, E]
+    new-headers: ["Part1", "Part2"]
 
   # - type: uppercase-column
   #   column: C
@@ -87,6 +91,46 @@ operations:
     row: 1
     to: "snake_case"
     delimiter: " "
+```
+
+## Result
+
+JSON:
+
+```json
+[
+  {
+    "no": "1",
+    "product_code": "VG-WHITE",
+    "product_name": "V Shirt",
+    "part1": "VG",
+    "part2": "WHITE"
+  },
+  {
+    "no": "2",
+    "product_code": "GH-BLUE",
+    "product_name": "G Handbag",
+    "part1": "GH",
+    "part2": "BLUE"
+  },
+  {
+    "no": "3",
+    "product_code": "BN-PURPLE",
+    "product_name": "B Necklace",
+    "part1": "BN",
+    "part2": "PURPLE"
+  }
+]
+```
+
+CSV:
+
+```csv
+no,product_code,product_name,part1,part2
+1,VG-WHITE,V Shirt,VG,WHITE
+2,GH-BLUE,G Handbag,GH,BLUE
+3,BN-PURPLE,B Necklace,BN,PURPLE
+
 ```
 
 ## How to Contribute

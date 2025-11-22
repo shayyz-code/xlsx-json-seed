@@ -1,0 +1,23 @@
+[
+  {
+    "no": "1",
+    "product_code": "VG-WHITE",
+    "product_name": "V Shirt",
+    "part1": "VG",
+    "part2": "WHITE"
+  },
+  {
+    "no": "2",
+    "product_code": "GH-BLUE",
+    "product_name": "G Handbag",
+    "part1": "GH",
+    "part2": "BLUE"
+  },
+  {
+    "no": "3",
+    "product_code": "BN-PURPLE",
+    "product_name": "B Necklace",
+    "part1": "BN",
+    "part2": "PURPLE"
+  }
+]

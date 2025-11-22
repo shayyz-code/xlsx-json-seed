@@ -114,13 +114,16 @@ std::string to_snake(const std::string &str)
 
 void split_column_xlsx(
     xlnt::worksheet &ws,
+    const std::uint32_t header_row,
+    const std::uint32_t first_data_row,
     const std::string &source,
     const std::string &delimiter,
-    const std::vector<std::string> &targets)
+    const std::vector<std::string> &targets,
+    const std::vector<std::string> &new_headers)
 {
     auto max_row = ws.highest_row();
 
-    for (std::size_t row = 1; row <= max_row; ++row)
+    for (std::uint32_t row = first_data_row; row <= max_row; ++row)
     {
         std::string cell_ref = source + std::to_string(row);
 
@@ -145,13 +148,23 @@ void split_column_xlsx(
             ws.cell(target).value(i < parts.size() ? parts[i] : "");
         }
     }
+
+    // Set new headers if provided
+    if (!new_headers.empty())
+    {
+        for (std::size_t i = 0; i < targets.size(); i++)
+        {
+            std::string target = targets[i] + std::to_string(header_row);
+            ws.cell(target).value(i < new_headers.size() ? new_headers[i] : "");
+        }
+    }
 }
 
-void uppercase_column_xlsx(xlnt::worksheet &ws, const std::string &column)
+void uppercase_column_xlsx(xlnt::worksheet &ws, const std::uint32_t first_data_row, const std::string &column)
 {
     auto max_row = ws.highest_row();
 
-    for (std::size_t row = 1; row <= max_row; ++row)
+    for (std::uint32_t row = first_data_row; row <= max_row; ++row)
     {
         std::string cell_ref = column + std::to_string(row);
 
@@ -166,13 +179,14 @@ void uppercase_column_xlsx(xlnt::worksheet &ws, const std::string &column)
 
 void replace_in_column_xlsx(
     xlnt::worksheet &ws,
+    const std::uint32_t first_data_row,
     const std::string &column,
     const std::string &find,
     const std::string &repl)
 {
     auto max_row = ws.highest_row();
 
-    for (std::size_t row = 1; row <= max_row; ++row)
+    for (std::uint32_t row = first_data_row; row <= max_row; ++row)
     {
         std::string cell_ref = column + std::to_string(row);
 

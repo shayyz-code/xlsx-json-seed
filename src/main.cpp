@@ -3,6 +3,7 @@
 #include "config.hpp"
 #include "operations.hpp"
 #include "csv.hpp"
+#include "json.hpp"
 #include <CLI/CLI.hpp>
 
 // color macros
@@ -21,7 +22,7 @@
 
 int main(int argc, char **argv)
 {
-    CLI::App app { BOLD CYAN "XLSX Seed - A tool to process XLSX files using YAML scripts, primarily for Database Seeding" RESET };
+    CLI::App app { BOLD CYAN "XLSX JSON Seed - A tool to process XLSX files using YAML scripts, primarily for Firestore Seeding" RESET };
 
     std::string config_path;
 
@@ -41,7 +42,10 @@ int main(int argc, char **argv)
 
     std::cout << BOLD WHITE "# Input File: " RESET << GREEN << cfg.input_file << RESET << "\n";
     std::cout << BOLD WHITE "# Output File: " RESET << GREEN << cfg.output_file << RESET << "\n";
-    std::cout << BOLD WHITE "# Export CSV: " RESET << GREEN << (cfg.export_csv ? "true" : "false") << RESET << "\n\n";
+    std::cout << BOLD WHITE "# Header Row: " RESET << GREEN << cfg.header_row << RESET << "\n";
+    std::cout << BOLD WHITE "# First Data Row: " RESET << GREEN << cfg.first_data_row << RESET << "\n\n";
+    std::cout << BOLD WHITE "# Export CSV: " RESET << GREEN << (cfg.export_csv ? "yes" : "No") << RESET << "\n";
+    std::cout << BOLD WHITE "# Export XLSX (Excel): " RESET << GREEN << (cfg.export_xlsx ? "yes" : "No") << RESET << "\n\n";
     std::cout << BOLD WHITE "*  Running operations..." RESET << "\n\n";
 
     xlnt::workbook wb;
@@ -54,17 +58,23 @@ int main(int argc, char **argv)
         {
             auto src = op.node["source"].as<std::string>();
             auto delim = op.node["delimiter"].as<std::string>();
-            auto targetNodes = op.node["targets"];
+            auto targetNodes = op.node["split-to"];
+            auto newHeaderNodes = op.node["new-headers"];
 
             std::vector<std::string> targets;
 
             for (const auto &t : targetNodes)
                 targets.push_back(t.as<std::string>());
 
+            std::vector<std::string> newHeaders;
+
+            for (const auto &h : newHeaderNodes)
+                newHeaders.push_back(h.as<std::string>());
+
             std::cout << GREEN "✔ " RESET YELLOW "split-column" RESET
                       << " (" << CYAN << src << RESET << ")\n";
 
-            split_column_xlsx(ws, src, delim, targets);
+            split_column_xlsx(ws, cfg.header_row, cfg.first_data_row, src, delim, targets, newHeaders);
         }
         else if (op.type == "uppercase-column")
         {
@@ -72,7 +82,7 @@ int main(int argc, char **argv)
 
             std::cout << GREEN "✔ " RESET YELLOW "uppercase-column" RESET
                       << " (" << CYAN << col << RESET << ")\n";
-            uppercase_column_xlsx(ws, col);
+            uppercase_column_xlsx(ws, cfg.first_data_row, col);
         }
         else if (op.type == "replace-in-column")
         {
@@ -85,13 +95,13 @@ int main(int argc, char **argv)
                       << MAGENTA << "\"" << f << "\"" << RESET
                       << " → "
                       << GREEN << "\"" << r << "\"" << RESET << "\n";
-            replace_in_column_xlsx(ws, col, f, r);
+            replace_in_column_xlsx(ws, cfg.first_data_row, col, f, r);
         }
         else if (op.type == "transform-row")
         {
             auto row = op.node["row"].as<std::uint32_t>();
             auto to = op.node["to"].as<std::string>();
-            auto delim = op.node["delimiter"].as<std::string>();
+            auto delim = op.node["delimiter"].as<std::string>("");
 
              std::cout << GREEN "✔ " RESET YELLOW "transform-row" RESET
                       << " (" << CYAN << row << RESET << ") "
@@ -110,11 +120,14 @@ int main(int argc, char **argv)
         }
     }
 
+
+    save_json(ws, cfg.header_row, cfg.first_data_row, cfg.output_file + ".json");
+
     if (cfg.export_csv)
     {
-        save_csv(ws, cfg.output_file + ".csv");
+        save_csv(ws, cfg.header_row, cfg.first_data_row, cfg.output_file + ".csv");
     }
-    else
+    if (cfg.export_xlsx)
     {
         wb.save(cfg.output_file + ".xlsx");
     }

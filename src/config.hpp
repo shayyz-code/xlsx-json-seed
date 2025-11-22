@@ -14,6 +14,9 @@ struct Config
     std::string input_file;
     std::string output_file;
     bool export_csv = false;
+    bool export_xlsx = false;
+    std::uint32_t header_row = 1;
+    std::uint32_t first_data_row = 2;
     std::vector<Operation> operations;
 };
 

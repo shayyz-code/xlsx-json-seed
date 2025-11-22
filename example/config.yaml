@@ -1,12 +1,16 @@
 input: "example/input.xlsx"
 output: "example/result"
-export_csv: true
+header-row: 1
+first-data-row: 2
+
+export-csv: true
 
 operations:
   - type: split-column
     source: B
     delimiter: "-"
-    targets: [D, E]
+    split-to: [D, E]
+    new-headers: ["Part1", "Part2"]
 
   # - type: uppercase-column
   #   column: C

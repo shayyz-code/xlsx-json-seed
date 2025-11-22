@@ -20,6 +20,7 @@ add_library(xlsx_json_seed_lib
     src/config.cpp
     src/operations.cpp
     src/csv.hpp
+    src/json.hpp
 )
 
 target_include_directories(xlsx_json_seed_lib PUBLIC src)
