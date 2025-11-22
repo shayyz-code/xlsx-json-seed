@@ -32,10 +32,10 @@ int main(int argc, char **argv)
     CLI11_PARSE(app, argc, argv);
 
 
-    std::cout << BOLD BLUE      "─────────────────────────────────────────────────────────\n" RESET;
-    std::cout << BOLD CYAN      "   XLSX-SEED — Process Excel for Data Seeding via YAML   \n" RESET;
-    std::cout << BOLD PURPLE    "                       by shayyz-code                    \n" RESET;
-    std::cout << BOLD BLUE      "─────────────────────────────────────────────────────────\n" RESET;
+    std::cout << BOLD BLUE      "──────────────────────────────────────────────────────────────\n" RESET;
+    std::cout << BOLD CYAN      "   XLSX-JSON-SEED — Process Excel for Data Seeding via YAML   \n" RESET;
+    std::cout << BOLD PURPLE    "                         by shayyz-code                       \n" RESET;
+    std::cout << BOLD BLUE      "──────────────────────────────────────────────────────────────\n" RESET;
 
     Config cfg = load_config(config_path);
 
@@ -120,5 +120,5 @@ int main(int argc, char **argv)
     }
     
     std::cout << "\n" << BOLD GREEN "✨ Finished seeding!" RESET "\n";
-    std::cout << BOLD BLUE "─────────────────────────────────────────────────────────\n" RESET;
+    std::cout << BOLD BLUE "──────────────────────────────────────────────────────────────\n" RESET;
 }

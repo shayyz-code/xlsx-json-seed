@@ -1,10 +1,12 @@
-# xlsx-seed
+# xlsx-json-seed
 
 ![c++](https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
 ![cmake](https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white)
 ![MIT](https://img.shields.io/badge/MIT-green?style=for-the-badge)
 
-A Blazingly Fast and Flexible **CLI tool for processing and automating Excel (.xlsx) data for Database Seeding** using a simple **YAML instruction file**.
+A Blazingly Fast and Flexible **CLI tool for processing and automating Excel (.xlsx) data for Firestore Seeding** using a simple **YAML instruction file**.
+
+Can be used together with [json-firestore-seed](https://github.com/shayyz-code/json-firestore-seed) to process firestore data entry.
 
 Built in **C++**, powered by **xlnt**, and **yaml-cpp**.
 
@@ -23,8 +25,8 @@ Built in **C++**, powered by **xlnt**, and **yaml-cpp**.
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/shayyz-code/xlsx-seed
-cd xlsx-seed
+git clone https://github.com/shayyz-code/xlsx-json-seed
+cd xlsx-json-seed
 ```
 
 ### 2. Install dependencies via vcpkg (not with manifest mode)
@@ -49,13 +51,13 @@ cmake --build build --config Release
 CLI binary will be at:
 
 ```
-build/xlsx_seed
+build/xlsx_json_seed
 ```
 
 ## Usage
 
 ```
-./build/xlsx_seed --config config.yaml
+./build/xlsx_json_seed --config config.yaml
 ```
 
 ## Example
@@ -73,13 +75,18 @@ operations:
     delimiter: "-"
     targets: [D, E]
 
-  - type: uppercase-column
-    column: C
+  # - type: uppercase-column
+  #   column: C
 
   - type: replace-in-column
     column: C
-    find: " "
-    replace: " - "
+    find: "-"
+    replace: ","
+
+  - type: transform-row
+    row: 1
+    to: "snake_case"
+    delimiter: " "
 ```
 
 ## How to Contribute

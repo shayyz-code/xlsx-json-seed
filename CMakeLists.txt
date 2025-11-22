@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(xlsx_seed LANGUAGES CXX)
+project(xlsx_json_seed LANGUAGES CXX)
 
 set(CMAKE_CXX_COMPILER "clang++")
 
@@ -16,27 +16,27 @@ find_package(xlnt CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
 
-add_library(xlsx_seed_lib
+add_library(xlsx_json_seed_lib
     src/config.cpp
     src/operations.cpp
     src/csv.hpp
 )
 
-target_include_directories(xlsx_seed_lib PUBLIC src)
+target_include_directories(xlsx_json_seed_lib PUBLIC src)
 
-target_link_libraries(xlsx_seed_lib
+target_link_libraries(xlsx_json_seed_lib
     PRIVATE
         yaml-cpp
         xlnt::xlnt
 )
 
-add_executable(xlsx_seed
+add_executable(xlsx_json_seed
     src/main.cpp
 )
 
-target_link_libraries(xlsx_seed 
+target_link_libraries(xlsx_json_seed 
     PRIVATE
-        xlsx_seed_lib
+        xlsx_json_seed_lib
         xlnt::xlnt
         CLI11::CLI11
 )
@@ -45,6 +45,6 @@ target_link_libraries(xlsx_seed
 find_package(Catch2 CONFIG REQUIRED)
 
 add_executable(test_operations tests/test_operations.cpp)
-target_link_libraries(test_operations PRIVATE xlsx_seed_lib Catch2::Catch2WithMain)
+target_link_libraries(test_operations PRIVATE xlsx_json_seed_lib Catch2::Catch2WithMain)
 
 add_test(NAME operations_test COMMAND test_operations)
