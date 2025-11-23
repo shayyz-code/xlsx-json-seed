@@ -4,15 +4,15 @@
 ![cmake](https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white)
 ![MIT](https://img.shields.io/badge/MIT-green?style=for-the-badge)
 
-A **Blazingly Fast, Nitro-Boosted** tool for processing and automating Excel (.xlsx) data for Firestore Seeding** using a simple **YAML instruction file\*\*.
+A **Blazingly Fast, Nitro-Boosted** tool for processing and automating Excel (.xlsx) data for any database seeding using a simple **YAML instruction file**.
 
-Can be used together with [json-firestore-seed](https://github.com/shayyz-code/json-firestore-seed) to process firestore data entry.
+Can be used together with [**json-firestore-seed**](https://github.com/shayyz-code/json-firestore-seed) to process **firestore data entry**.
 
-Built in **C++**, powered by **OpenXLSX**, and **yaml-cpp**.
+Built in **C++**, powered by [**OpenXLSX**](https://github.com/troldal/OpenXLSX), and [**yaml-cpp**](https://github.com/jbeder/yaml-cpp).
 
 ## NOTE: Compactibility, Performance, and Memory Usage
 
-See at OpenXLSX's repo [https://github.com/troldal/OpenXLSX]([https://github.com/troldal/OpenXLSX])
+See at OpenXLSX's repo [https://github.com/troldal/OpenXLSX](https://github.com/troldal/OpenXLSX) (since it may be updated at anytime)
 
 _OpenXLSX version used in this project is (aral-matrix) 14 July 2025._
 
