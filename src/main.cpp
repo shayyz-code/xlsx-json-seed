@@ -40,13 +40,13 @@ int main(int argc, char **argv)
 
     Config cfg = load_config(config_path);
 
-    std::cout << BOLD WHITE "# Input File: " RESET << GREEN << cfg.input_file << RESET << "\n";
-    std::cout << BOLD WHITE "# Output File: " RESET << GREEN << cfg.output_file << RESET << "\n";
-    std::cout << BOLD WHITE "# Header Row: " RESET << GREEN << cfg.header_row << RESET << "\n";
-    std::cout << BOLD WHITE "# First Data Row: " RESET << GREEN << cfg.first_data_row << RESET << "\n\n";
-    std::cout << BOLD WHITE "# Export CSV: " RESET << GREEN << (cfg.export_csv ? "yes" : "No") << RESET << "\n";
-    std::cout << BOLD WHITE "# Export XLSX (Excel): " RESET << GREEN << (cfg.export_xlsx ? "yes" : "No") << RESET << "\n\n";
-    std::cout << BOLD WHITE "*  Running operations..." RESET << "\n\n";
+    std::cout << BOLD WHITE "- Input File: " RESET << GREEN << cfg.input_file << RESET << "\n";
+    std::cout << BOLD WHITE "- Output File: " RESET << GREEN << cfg.output_file << RESET << "\n";
+    std::cout << BOLD WHITE "- Header Row: " RESET << GREEN << cfg.header_row << RESET << "\n";
+    std::cout << BOLD WHITE "- First Data Row: " RESET << GREEN << cfg.first_data_row << RESET << "\n\n";
+    std::cout << BOLD WHITE "- Export CSV: " RESET << GREEN << (cfg.export_csv ? "yes" : "No") << RESET << "\n";
+    std::cout << BOLD WHITE "- Export XLSX (Excel): " RESET << GREEN << (cfg.export_xlsx ? "yes" : "No") << RESET << "\n\n";
+    std::cout << BOLD WHITE "#  Running operations..." RESET << "\n\n";
 
     xlnt::workbook wb;
     wb.load(cfg.input_file);
@@ -54,7 +54,21 @@ int main(int argc, char **argv)
 
     for (auto &op : cfg.operations)
     {
-        if (op.type == "split-column")
+        if (op.type == "fill-column")
+        {
+            auto col = op.node["column"].as<std::string>();
+            auto fill_with = op.node["fill-with"].as<std::string>();
+            auto new_header = op.node["new-header"].as<std::string>("");
+
+             std::cout << GREEN "✔ " RESET YELLOW "fill-column" RESET
+                      << " (" << CYAN << col << RESET << ") with "
+                      << MAGENTA << "\"" << fill_with << "\"" << RESET
+                      << " → by header "
+                      << GREEN << "\"" << new_header << "\"" << RESET << "\n";
+
+            fill_column_xlsx(ws, cfg.header_row, cfg.first_data_row, col, fill_with, new_header);
+        }
+        else if (op.type == "split-column")
         {
             auto src = op.node["source"].as<std::string>();
             auto delim = op.node["delimiter"].as<std::string>();

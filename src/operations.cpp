@@ -1,116 +1,62 @@
 #include "operations.hpp"
 #include <algorithm>
 #include <sstream>
+#include "utils.hpp"
 
-// helpers
-int col_to_index(const std::string &col)
-{
-    return col[0] - 'A';
-}
-
-std::string to_upper(const std::string &str)
-{
-    std::string r = str;
-    std::transform(r.begin(), r.end(), r.begin(), [](unsigned char c) { return std::toupper(c);});
-
-    return r;
-}
-
-std::string to_lower(const std::string &str)
-{
-    std::string r = str;
-    std::transform(r.begin(), r.end(), r.begin(), [](unsigned char c) { return std::tolower(c);});
-
-    return r;
-}
-
-std::string to_camel(const std::string &str, char &delim)
-{
-    std::string r = to_lower(str);
-    bool cap_next = false;
-
-    for (size_t i = 0; i < r.size(); i++)
-    {
-        if (r[i] == delim)
-        {
-            cap_next = true;
-        }
-        else if (cap_next)
-        {
-            r[i] = std::toupper(r[i]);
-            cap_next = false;
-        }
-    }
-
-    r.erase(std::remove(r.begin(), r.end(), delim), r.end());
-
-    return r;
-}
-
-
-std::string to_pascal(const std::string &str, char &delim)
-{
-    std::string r = to_camel(str, delim);
-    if (!r.empty())
-    {
-        r[0] = std::toupper(r[0]);
-    }
-    return r;
-}
-
-// helper for to_snake
-static inline bool is_sep(char c)
-{
-    return std::isspace((unsigned char)c) || std::ispunct((unsigned char)c);
-}
-
-std::string to_snake(const std::string &str)
-{
-    std::string out;
-    out.reserve(str.size() * 2);
-
-    bool last_was_sep = false;
-
-    for (size_t i = 0; i < str.size(); ++i)
-    {
-        unsigned char c = str[i];
-
-        // ---- Separator / punctuation / space ----
-        if (is_sep(c))
-        {
-            if (!out.empty() && !last_was_sep)
-            {
-                out += '_';
-                last_was_sep = true;
-            }
-            continue;
-        }
-
-        // ---- Uppercase letter and not first char ----
-        if (std::isupper(c))
-        {
-            if (!out.empty() && !last_was_sep)
-            {
-                out += '_';
-            }
-            out += (char)std::tolower(c);
-            last_was_sep = false;
-            continue;
-        }
-
-        // ---- Lowercase or digit ----
-        out += (char)std::tolower(c);
-        last_was_sep = false;
-    }
-
-    // Trim trailing underscore
-    while (!out.empty() && out.back() == '_')
-        out.pop_back();
-
-    return out;
-}
 
 // ops
+
+void fill_column_xlsx(
+    xlnt::worksheet &ws,
+    const std::uint32_t header_row,
+    const std::uint32_t first_data_row,
+    const std::string &column,
+    const std::string &fill_with,
+    const std::string &new_header)
+{
+    auto max_row = ws.highest_row();
+    if (first_data_row > max_row)
+        return;
+
+    const std::string prefix = "firestore-random-past-date-n-year-";
+
+    for (std::uint32_t row = first_data_row; row <= max_row; ++row)
+    {
+        // Force-create cell so it exists even if empty
+        xlnt::cell c = ws.cell(column + std::to_string(row));
+
+        if (fill_with == "firestore-now")
+        {
+            c.value("__fire_ts_now__");
+        }
+        else if (str_starts_with(fill_with, prefix))
+        {
+            std::string years_part = str_slice_from(fill_with, prefix.size());
+            std::optional<uint32_t> n_years = std::nullopt;
+
+            try {
+                n_years = std::stoul(years_part);
+            }
+            catch (...) {
+                std::cerr << "WARNING: Could not parse N years: " << fill_with << "\n";
+            }
+
+            std::string ts = random_past_utc_date_within_n_years(n_years);
+            c.value("{ \"__fire_ts_from_date__\": \"" + ts + "\" }");
+        }
+        else
+        {
+            c.value(fill_with);
+        }
+    }
+
+    // Update header
+    if (!new_header.empty())
+    {
+        ws.cell(column + std::to_string(header_row)).value(new_header);
+    }
+}
+
 
 void split_column_xlsx(
     xlnt::worksheet &ws,

@@ -20,6 +20,16 @@ operations:
     find: "-"
     replace: ","
 
+  - type: fill-column
+    column: F
+    fill-with: "firestore-random-past-date-n-year-2"
+    new-header: "Created At"
+
+  # - type: add-column
+  #   at: "end"
+  #   fill-with: "firestore-now"
+  #   new-header: "Updated At"
+
   - type: transform-row
     row: 1
     to: "snake_case"

@@ -4,20 +4,23 @@
     "product_code": "VG-WHITE",
     "product_name": "V Shirt",
     "part1": "VG",
-    "part2": "WHITE"
+    "part2": "WHITE",
+    "created_at": { "__fire_ts_from_date__": "2023-11-27T01:40:59Z" }
   },
   {
     "no": "2",
     "product_code": "GH-BLUE",
     "product_name": "G Handbag",
     "part1": "GH",
-    "part2": "BLUE"
+    "part2": "BLUE",
+    "created_at": { "__fire_ts_from_date__": "2025-05-29T12:59:13Z" }
   },
   {
     "no": "3",
     "product_code": "BN-PURPLE",
     "product_name": "B Necklace",
     "part1": "BN",
-    "part2": "PURPLE"
+    "part2": "PURPLE",
+    "created_at": { "__fire_ts_from_date__": "2024-06-02T17:44:54Z" }
   }
 ]

@@ -19,6 +19,7 @@ find_package(CLI11 CONFIG REQUIRED)
 add_library(xlsx_json_seed_lib
     src/config.cpp
     src/operations.cpp
+    src/utils.cpp
     src/csv.hpp
     src/json.hpp
 )
@@ -45,7 +46,16 @@ target_link_libraries(xlsx_json_seed
 # ---- Tests ----
 find_package(Catch2 CONFIG REQUIRED)
 
-add_executable(test_operations tests/test_operations.cpp)
+add_executable(test_operations
+    tests/test_operations.cpp
+)
 target_link_libraries(test_operations PRIVATE xlsx_json_seed_lib Catch2::Catch2WithMain)
-
 add_test(NAME operations_test COMMAND test_operations)
+
+add_executable(test_utils
+    tests/test_utils.cpp
+)
+target_link_libraries(test_utils PRIVATE xlsx_json_seed_lib Catch2::Catch2WithMain)
+add_test(NAME utils_test COMMAND test_utils)
+
+

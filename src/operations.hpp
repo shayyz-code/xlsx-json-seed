@@ -4,7 +4,24 @@
 #include <optional>
 #include <xlnt/xlnt.hpp>
 
-void split_column_xlsx(xlnt::worksheet &ws, const std::uint32_t header_row, const std::uint32_t first_data_row, const std::string &source, const std::string &delimiter, const std::vector<std::string> &targets, const std::vector<std::string> &new_headers);
+void fill_column_xlsx(
+    xlnt::worksheet &ws,
+    const std::uint32_t header_row,
+    const std::uint32_t first_data_row,
+    const std::string &column,
+    const std::string &fill_with,
+    const std::string &new_header
+);
+
+void split_column_xlsx(
+    xlnt::worksheet &ws,
+    const std::uint32_t header_row,
+    const std::uint32_t first_data_row,
+    const std::string &source,
+    const std::string &delimiter,
+    const std::vector<std::string> &targets,
+    const std::vector<std::string> &new_headers
+);
 
 void uppercase_column_xlsx(xlnt::worksheet &ws, const std::uint32_t first_data_row, const std::string &column);
 
