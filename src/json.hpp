@@ -1,18 +1,27 @@
 #pragma once
-#include <xlnt/xlnt.hpp>
-#include <fstream>
 #include <string>
 #include <vector>
-#include <cstdint>
+#include <fstream>
+#include <algorithm>
+#include <cctype>
+#include <stdexcept>
 
-// ------------------------------------------------------
-// Escape JSON string characters safely
-// ------------------------------------------------------
+// Assumes Column { std::string header; std::vector<std::string> vals; bool dirty; }
+// and NitroSheet { std::vector<Column> cols; uint32_t first_row; uint32_t data_row_start; uint32_t num_rows; }
+
+// trim helper
+inline std::string trim_copy(const std::string &s) {
+    size_t b = 0, e = s.size();
+    while (b < e && std::isspace((unsigned char)s[b])) ++b;
+    while (e > b && std::isspace((unsigned char)s[e-1])) --e;
+    return s.substr(b, e - b);
+}
+
+// json escape helper (same as before)
 inline std::string json_escape(const std::string &s)
 {
     std::string out;
     out.reserve(s.size() + 16);
-
     for (unsigned char c : s)
     {
         switch (c)
@@ -31,128 +40,127 @@ inline std::string json_escape(const std::string &s)
                 std::snprintf(buf, sizeof(buf), "\\u%04x", c);
                 out += buf;
             }
-            else out += static_cast<char>(c);
+            else out += (char)c;
         }
     }
     return out;
 }
 
-// ------------------------------------------------------
-// JSON Exporter with configurable header + start row
-// ------------------------------------------------------
-inline void save_json(
-    const xlnt::worksheet &ws,
-    uint32_t header_row,
-    uint32_t first_data_row,
-    const std::string &path
+inline bool looks_like_firestore_obj(const std::string &trimmed)
+{
+    if (trimmed.size() < 3) return false;
+    if (trimmed.front() != '{' || trimmed.back() != '}') return false;
+    return trimmed.find("__fire_ts_from_date__") != std::string::npos ||
+           trimmed.find("__fire_ts_now__") != std::string::npos;
+}
+
+// ---------- Robust save_json_nitro that matches NitroSheet layout ----------
+inline void save_json_nitro(
+    const NitroSheet &sheet,
+    uint32_t header_row,        // kept for API compatibility; not used to index vals
+    uint32_t first_data_row,    // kept for API compatibility
+    const std::string &path,
+    bool pretty = true,
+    size_t flush_threshold = 1 << 20
 )
 {
-    std::ofstream out(path);
+    // Basic validation
+    if (sheet.cols.empty())
+        throw std::runtime_error("Cannot export JSON: sheet has no columns.");
+
+    const size_t data_rows = sheet.num_rows; // number of data rows in each column (vals.size())
+    if (data_rows == 0)
+        throw std::runtime_error("Sheet has 0 data rows.");
+
+    const size_t cols = sheet.cols.size();
+
+    
+
+    // Ensure every column has header (we rely on Column::header)
+    for (size_t c = 0; c < cols; ++c)
+    {
+        if (sheet.cols[c].header.empty())
+            throw std::runtime_error("Header missing for column index " + std::to_string(c));
+    }
+
+    // Ensure vals vectors are large enough for safe indexing
+    for (size_t c = 0; c < cols; ++c)
+    {
+        // const_cast because function receives const NitroSheet; if you want to mutate, accept non-const.
+        // Better: require non-const NitroSheet or ensure loader already resized. Here we'll require non-const from caller.
+        // To keep signature const, we will check only — but to avoid segfaults the loader MUST ensure sizing.
+        if (sheet.cols[c].vals.size() < data_rows)
+            throw std::runtime_error("Column " + std::to_string(c) + " vals size (" +
+                                     std::to_string(sheet.cols[c].vals.size()) +
+                                     ") is smaller than sheet.num_rows (" + std::to_string(data_rows) + ").");
+    }
+
+    // Open output stream
+    std::ofstream out(path, std::ios::binary);
     if (!out.is_open())
         throw std::runtime_error("Cannot write JSON: " + path);
 
-    // Calculate real used range
-    xlnt::range_reference dims = ws.calculate_dimension();
+    std::string buf;
+    buf.reserve(1024 * 1024);
+    auto flush_buf = [&](bool force=false){
+        if (!buf.empty()) {
+            out.write(buf.data(), static_cast<std::streamsize>(buf.size()));
+            buf.clear();
+        }
+        if (force) out.flush();
+    };
 
-    const uint32_t first_row = dims.top_left().row();
-    const uint32_t last_row  = dims.bottom_right().row();
-    const uint32_t first_col = dims.top_left().column().index;
-    const uint32_t last_col  = dims.bottom_right().column().index;
+    const std::string nl      = pretty ? "\n" : "";
+    const std::string ind1    = pretty ? "  " : "";
+    const std::string ind2    = pretty ? "    " : "";
 
-    if (header_row < first_row || header_row > last_row)
-        throw std::runtime_error("Configured header_row is outside worksheet bounds.");
+    buf += "[" + nl;
+    bool first_obj = true;
 
-    if (first_data_row < first_row)
-        first_data_row = first_row + 1; // safety fallback
-
-    // ------------------------------------------------------
-    // Read header row into vector
-    // ------------------------------------------------------
-    std::vector<std::string> headers;
-    headers.reserve(last_col - first_col + 1);
-
-    for (uint32_t col = first_col; col <= last_col; ++col)
+    // Iterate data rows: Nitro stores only data rows in vals[0..data_rows-1]
+    for (size_t r = 0; r < data_rows; ++r)
     {
-        auto cell = ws.cell(col, header_row);
-        std::string h = cell.has_value() ? cell.to_string() : "";
-
-        if (h.empty())
-            throw std::runtime_error(
-                "Header row contains an empty column title at column "
-                + std::to_string(col)
-            );
-
-        headers.push_back(h);
-    }
-
-    // ------------------------------------------------------
-    // Begin JSON array output
-    // ------------------------------------------------------
-    out << "[\n";
-    bool first_output = true;
-
-    // ------------------------------------------------------
-    // Iterate over data rows
-    // ------------------------------------------------------
-    for (uint32_t row = first_data_row; row <= last_row; ++row)
-    {
-        // Skip completely empty rows quickly
-        bool empty_row = true;
-        for (uint32_t col = first_col; col <= last_col; ++col)
+        // skip fully empty row
+        bool empty = true;
+        for (size_t c = 0; c < cols; ++c)
         {
-            if (ws.cell(col, row).has_value())
+            if (!sheet.cols[c].vals[r].empty()) { empty = false; break; }
+        }
+        if (empty) continue;
+
+        if (!first_obj) buf += "," + nl;
+        first_obj = false;
+
+        buf += ind1 + "{" + nl;
+
+        for (size_t c = 0; c < cols; ++c)
+        {
+            const std::string &key = sheet.cols[c].header;
+            const std::string &raw = sheet.cols[c].vals[r];
+            std::string trimmed = trim_copy(raw);
+
+            buf += ind2 + "\"" + json_escape(key) + "\": ";
+
+            if (!trimmed.empty() && looks_like_firestore_obj(trimmed))
             {
-                empty_row = false;
-                break;
+                buf += trimmed;
             }
-        }
-        if (empty_row)
-            continue;
-
-        if (!first_output)
-            out << ",\n";
-        first_output = false;
-
-        out << "  {\n";
-
-        // Each column
-        for (std::size_t i = 0; i < headers.size(); ++i)
-        {
-            uint32_t col = first_col + i;
-
-            std::string key = headers[i];
-            xlnt::cell cell = ws.cell(col, row);
-
-            std::string val = cell.has_value() ? cell.to_string() : "";
-
-            out << "    \"" << json_escape(key) << "\": ";
-
-            // Detect Firestore timestamp placeholder `{ "__fire_ts_from_date__": "..."}`
-            auto emit_value = [&](const std::string &v)
+            else
             {
-                if (
-                    v.size() > 2 &&
-                    v.front() == '{' &&
-                    v.back() == '}' &&
-                    (v.find("__fire_ts_from_date__") != std::string::npos)
-                ) {
-                    out << v;   // raw JSON
-                }
-                else {
-                    out << "\"" << json_escape(v) << "\"";
-                }
-            };
+                buf += "\"" + json_escape(raw) + "\"";
+            }
 
-            emit_value(val);
+            if (c + 1 < cols) buf += ",";
+            buf += nl;
 
-            if (i + 1 < headers.size())
-                out << ",";
-            out << "\n";
+            if (buf.size() >= flush_threshold) flush_buf();
         }
 
-
-        out << "  }";
+        buf += ind1 + "}";
+        if (buf.size() >= flush_threshold) flush_buf();
     }
 
-    out << "\n]\n";
+    buf += nl + "]" + nl;
+    flush_buf(true);
+    out.close();
 }

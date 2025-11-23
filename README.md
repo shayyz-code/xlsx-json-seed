@@ -4,11 +4,17 @@
 ![cmake](https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white)
 ![MIT](https://img.shields.io/badge/MIT-green?style=for-the-badge)
 
-A Blazingly Fast and Flexible **tool for processing and automating Excel (.xlsx) data for Firestore Seeding** using a simple **YAML instruction file**.
+A **Blazingly Fast, Nitro-Boosted** tool for processing and automating Excel (.xlsx) data for Firestore Seeding** using a simple **YAML instruction file\*\*.
 
 Can be used together with [json-firestore-seed](https://github.com/shayyz-code/json-firestore-seed) to process firestore data entry.
 
-Built in **C++**, powered by **xlnt**, and **yaml-cpp**.
+Built in **C++**, powered by **OpenXLSX**, and **yaml-cpp**.
+
+## NOTE: Compactibility, Performance, and Memory Usage
+
+See at OpenXLSX's repo [https://github.com/troldal/OpenXLSX]([https://github.com/troldal/OpenXLSX])
+
+_OpenXLSX version used in this project is (aral-matrix) 14 July 2025._
 
 ## Features
 
@@ -74,13 +80,13 @@ export-csv: true
 
 operations:
   - type: split-column
-    source: B
+    column: B
     delimiter: "-"
     split-to: [D, E]
     new-headers: ["Part1", "Part2"]
 
   # - type: uppercase-column
-  #   column: C
+  #   column: G
 
   - type: replace-in-column
     column: C
@@ -102,8 +108,12 @@ operations:
     fill-with: "prefix"
     new-header: "Prefix"
 
-  - type: transform-row
-    row: 1
+  # - type: transform-row
+  #   row: 1
+  #   to: "camelCase"
+  #   delimiter: " "
+
+  - type: transform-header
     to: "snake_case"
     delimiter: " "
 ```
@@ -121,7 +131,7 @@ JSON:
     "product_name": "V Shirt",
     "part1": "VG",
     "part2": "WHITE",
-    "created_at": { "__fire_ts_from_date__": "2024-12-16T02:12:23Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-03-09T08:09:23Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
@@ -131,7 +141,7 @@ JSON:
     "product_name": "G Handbag",
     "part1": "GH",
     "part2": "BLUE",
-    "created_at": { "__fire_ts_from_date__": "2025-09-29T03:25:29Z" },
+    "created_at": { "__fire_ts_from_date__": "2025-07-25T08:05:24Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
@@ -141,7 +151,7 @@ JSON:
     "product_name": "B Necklace",
     "part1": "BN",
     "part2": "PURPLE",
-    "created_at": { "__fire_ts_from_date__": "2024-03-05T04:58:04Z" },
+    "created_at": { "__fire_ts_from_date__": "2025-11-04T21:29:03Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]
@@ -151,10 +161,9 @@ CSV:
 
 ```csv
 prefix,no,product_code,product_name,part1,part2,created_at,updated_at
-prefix,1,VG-WHITE,V Shirt,VG,WHITE,"{ ""__fire_ts_from_date__"": ""2024-12-16T02:12:23Z"" }",__fire_ts_now__
-prefix,2,GH-BLUE,G Handbag,GH,BLUE,"{ ""__fire_ts_from_date__"": ""2025-09-29T03:25:29Z"" }",__fire_ts_now__
-prefix,3,BN-PURPLE,B Necklace,BN,PURPLE,"{ ""__fire_ts_from_date__"": ""2024-03-05T04:58:04Z"" }",__fire_ts_now__
-
+prefix,1,VG-WHITE,V Shirt,VG,WHITE,"{ ""__fire_ts_from_date__"": ""2024-03-09T08:09:23Z"" }",__fire_ts_now__
+prefix,2,GH-BLUE,G Handbag,GH,BLUE,"{ ""__fire_ts_from_date__"": ""2025-07-25T08:05:24Z"" }",__fire_ts_now__
+prefix,3,BN-PURPLE,B Necklace,BN,PURPLE,"{ ""__fire_ts_from_date__"": ""2025-11-04T21:29:03Z"" }",__fire_ts_now__
 ```
 
 ## How to Contribute

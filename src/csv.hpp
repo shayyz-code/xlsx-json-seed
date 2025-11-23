@@ -1,129 +1,118 @@
 #pragma once
-#include <xlnt/xlnt.hpp>
-#include <fstream>
 #include <string>
+#include <fstream>
+#include <stdexcept>
 #include <vector>
-#include <cstdint>
 
-// ------------------------------------------------------
-// Escape CSV fields according to RFC 4180
-// ------------------------------------------------------
+// RFC-4180 CSV escape
 inline std::string csv_escape(const std::string &s)
 {
-    bool needs_quotes =
-        s.find(',') != std::string::npos ||
-        s.find('"') != std::string::npos ||
-        s.find('\n') != std::string::npos ||
-        s.find('\r') != std::string::npos;
+    bool needs_quotes = false;
+
+    for (char c : s)
+    {
+        if (c == '"' || c == ',' || c == '\n' || c == '\r')
+        {
+            needs_quotes = true;
+            break;
+        }
+    }
 
     if (!needs_quotes)
         return s;
 
-    std::string out = "\"";
+    // Escape double quotes
+    std::string out;
+    out.reserve(s.size() + 8);
+    out.push_back('"');
+
     for (char c : s)
     {
         if (c == '"')
-            out += "\"\"";  // escape double-quote
+            out += "\"\"";   // escape "
         else
-            out += c;
+            out.push_back(c);
     }
-    out += "\"";
 
+    out.push_back('"');
     return out;
 }
 
-// ------------------------------------------------------
-// CSV Exporter with header & start row
-// ------------------------------------------------------
-inline void save_csv(
-    const xlnt::worksheet &ws,
-    uint32_t header_row,
-    uint32_t first_data_row,
-    const std::string &path
+inline void save_csv_nitro(
+    const NitroSheet &sheet,
+    const std::string &path,
+    size_t flush_threshold = 1 << 20
 )
 {
-    std::ofstream out(path);
+    if (sheet.cols.empty())
+        throw std::runtime_error("CSV export failed: sheet has no columns.");
+
+    const size_t rows = sheet.num_rows;
+    const size_t cols = sheet.cols.size();
+
+    // Validate column structures
+    for (size_t c = 0; c < cols; ++c)
+    {
+        if (sheet.cols[c].header.empty())
+            throw std::runtime_error("CSV export: column " +
+                                     std::to_string(c) +
+                                     " has an empty header.");
+
+        if (sheet.cols[c].vals.size() < rows)
+            throw std::runtime_error("CSV export: column " +
+                                     std::to_string(c) +
+                                     " vals smaller than sheet.num_rows.");
+    }
+
+    std::ofstream out(path, std::ios::binary);
     if (!out.is_open())
-        throw std::runtime_error("Cannot write CSV: " + path);
+        throw std::runtime_error("Cannot open CSV file: " + path);
 
-    // Get sheet bounds
-    xlnt::range_reference dims = ws.calculate_dimension();
+    std::string buf;
+    buf.reserve(1024 * 1024);
 
-    uint32_t first_row = dims.top_left().row();
-    uint32_t last_row  = dims.bottom_right().row();
-    uint32_t first_col = dims.top_left().column().index;
-    uint32_t last_col  = dims.bottom_right().column().index;
+    auto flush_buf = [&](bool force=false){
+        if (!buf.empty()) {
+            out.write(buf.data(), (std::streamsize)buf.size());
+            buf.clear();
+        }
+        if (force) out.flush();
+    };
 
-    if (header_row < first_row || header_row > last_row)
-        throw std::runtime_error("Configured header_row is outside worksheet bounds");
-
-    if (first_data_row < first_row)
-        first_data_row = first_row + 1; // safety fallback
-
-    // ------------------------------------------------------
-    // Extract header titles
-    // ------------------------------------------------------
-    std::vector<std::string> headers;
-    headers.reserve(last_col - first_col + 1);
-
-    for (uint32_t col = first_col; col <= last_col; ++col)
+    // --------------------------
+    // Write header row
+    // --------------------------
+    for (size_t c = 0; c < cols; ++c)
     {
-        xlnt::cell c = ws.cell(col, header_row);
-        std::string h = c.has_value() ? c.to_string() : "";
-
-        if (h.empty())
-            throw std::runtime_error(
-                "Header row contains an empty column title at column " + std::to_string(col)
-            );
-
-        headers.push_back(h);
+        buf += csv_escape(sheet.cols[c].header);
+        if (c + 1 < cols) buf += ",";
     }
+    buf += "\n";
+    flush_buf();
 
-    // ------------------------------------------------------
-    // Write header line
-    // ------------------------------------------------------
-    for (std::size_t i = 0; i < headers.size(); ++i)
-    {
-        out << csv_escape(headers[i]);
-        if (i + 1 < headers.size()) out << ",";
-    }
-    out << "\n";
-
-    // ------------------------------------------------------
+    // --------------------------
     // Write data rows
-    // ------------------------------------------------------
-    for (uint32_t row = first_data_row; row <= last_row; ++row)
+    // --------------------------
+    for (size_t r = 0; r < rows; ++r)
     {
-        // Skip empty rows
         bool empty = true;
-        for (uint32_t col = first_col; col <= last_col; ++col)
-        {
-            if (ws.cell(col, row).has_value())
-            {
+        for (size_t c = 0; c < cols; ++c)
+            if (!sheet.cols[c].vals[r].empty())
                 empty = false;
-                break;
-            }
-        }
-        if (empty)
-            continue;
 
-        // Write each column
-        for (std::size_t i = 0; i < headers.size(); ++i)
+        if (empty) continue;
+
+        for (size_t c = 0; c < cols; ++c)
         {
-            uint32_t col = first_col + i;
-            xlnt::cell c = ws.cell(col, row);
-
-            std::string val = c.has_value() ? c.to_string() : "";
-
-            // We allow Firestore JSON objects inside CSV cells
-            // e.g. { "__fire_ts_from_date__": "..." }
-            // They get escaped normally with csv_escape().
-            out << csv_escape(val);
-
-            if (i + 1 < headers.size())
-                out << ",";
+            buf += csv_escape(sheet.cols[c].vals[r]);
+            if (c + 1 < cols) buf += ",";
         }
+        buf += "\n";
 
-        out << "\n";
+        if (buf.size() >= flush_threshold)
+            flush_buf();
     }
+
+    flush_buf(true);
+    out.close();
 }

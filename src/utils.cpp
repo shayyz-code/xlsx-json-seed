@@ -1,6 +1,17 @@
 #include <random>
 #include <chrono>
 #include "utils.hpp"
+#include <iostream>
+#include <string>
+
+#define RESET   "\033[0m"
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/ioctl.h>
+#include <unistd.h>
+#endif
 
 // helpers
 
@@ -20,31 +31,32 @@ bool str_starts_with(const std::string &s, const std::string &prefix)
 // Column name <-> index helpers
 // -----------------------------
 // "A" -> 1, "Z" -> 26, "AA" -> 27
-std::uint32_t col_to_index(const std::string &col)
+std::size_t col_to_index(const std::string &letters)
 {
-    std::uint32_t result = 0;
-    for (char ch : col)
+    size_t index = 0;
+    for (char c : letters)
     {
-        if (ch >= 'a' && ch <= 'z') ch = ch - 'a' + 'A';
-        if (ch < 'A' || ch > 'Z') throw std::invalid_argument("Invalid column name: " + col);
-        result = result * 26 + (static_cast<std::uint32_t>(ch - 'A') + 1);
+        if (c >= 'A' && c <= 'Z') index = index * 26 + (c - 'A' + 1);
+        else if (c >= 'a' && c <= 'z') index = index * 26 + (c - 'a' + 1);
+        else throw std::invalid_argument("Invalid column letter: " + letters);
     }
-    return result;
+    return index - 1; // convert 1-based -> 0-based
 }
 
-// 1 -> "A", 27 -> "AA"
-std::string index_to_col(std::uint32_t index)
+// ----------------------
+// Convert 0-based index to column letters
+// ----------------------
+std::string index_to_col(size_t index)
 {
-    if (index == 0) throw std::invalid_argument("Column index must be >= 1");
-    std::string s;
+    std::string letters;
+    index += 1; // make 1-based
     while (index > 0)
     {
-        --index;
-        char ch = static_cast<char>('A' + (index % 26));
-        s.insert(s.begin(), ch);
-        index /= 26;
+        size_t rem = (index - 1) % 26;
+        letters = static_cast<char>('A' + rem) + letters;
+        index = (index - 1) / 26;
     }
-    return s;
+    return letters;
 }
 
 std::string to_upper(const std::string &str)
@@ -186,4 +198,36 @@ std::string random_past_utc_date_within_n_years(
     std::strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ", &tm_utc);
 
     return std::string(buffer);
+}
+
+// os terminal helpers
+int get_terminal_width()
+{
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
+        return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    else
+        return 80; // fallback
+#else
+    struct winsize ws;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0)
+        return ws.ws_col;
+    else
+        return 80; // fallback
+#endif
+}
+
+void print_full_line_utf8(const std::string &color, const std::string &glyph)
+{
+    int width = get_terminal_width();
+    if (width < 1) width = 80;
+
+    std::cout << color;
+
+    // Print glyph 'width' times
+    for (int i = 0; i < width; ++i)
+        std::cout << glyph;
+
+    std::cout << RESET << "\n";
 }

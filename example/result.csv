@@ -1,4 +1,4 @@
 prefix,no,product_code,product_name,part1,part2,created_at,updated_at
-prefix,1,VG-WHITE,V Shirt,VG,WHITE,"{ ""__fire_ts_from_date__"": ""2024-12-16T02:12:23Z"" }",__fire_ts_now__
-prefix,2,GH-BLUE,G Handbag,GH,BLUE,"{ ""__fire_ts_from_date__"": ""2025-09-29T03:25:29Z"" }",__fire_ts_now__
-prefix,3,BN-PURPLE,B Necklace,BN,PURPLE,"{ ""__fire_ts_from_date__"": ""2024-03-05T04:58:04Z"" }",__fire_ts_now__
+prefix,1,VG-WHITE,V Shirt,VG,WHITE,"{ ""__fire_ts_from_date__"": ""2024-03-09T08:09:23Z"" }",__fire_ts_now__
+prefix,2,GH-BLUE,G Handbag,GH,BLUE,"{ ""__fire_ts_from_date__"": ""2025-07-25T08:05:24Z"" }",__fire_ts_now__
+prefix,3,BN-PURPLE,B Necklace,BN,PURPLE,"{ ""__fire_ts_from_date__"": ""2025-11-04T21:29:03Z"" }",__fire_ts_now__

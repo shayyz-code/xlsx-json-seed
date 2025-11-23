@@ -7,13 +7,13 @@ export-csv: true
 
 operations:
   - type: split-column
-    source: B
+    column: B
     delimiter: "-"
     split-to: [D, E]
     new-headers: ["Part1", "Part2"]
 
   # - type: uppercase-column
-  #   column: C
+  #   column: G
 
   - type: replace-in-column
     column: C
@@ -35,7 +35,11 @@ operations:
     fill-with: "prefix"
     new-header: "Prefix"
 
-  - type: transform-row
-    row: 1
+  # - type: transform-row
+  #   row: 1
+  #   to: "camelCase"
+  #   delimiter: " "
+
+  - type: transform-header
     to: "snake_case"
     delimiter: " "
