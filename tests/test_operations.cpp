@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 #include "operations.hpp"
+#include "utils.hpp"
 
 
 TEST_CASE("to_lower converts strings to lowercase", "[to_lower]")

@@ -6,7 +6,9 @@ std::string str_slice_from(const std::string &s, size_t start);
 
 bool str_starts_with(const std::string &s, const std::string &prefix);
 
-int col_to_index(const std::string &col);
+std::uint32_t col_to_index(const std::string &col);
+
+std::string index_to_col(std::uint32_t index);
 
 std::string to_upper(const std::string &str);
 

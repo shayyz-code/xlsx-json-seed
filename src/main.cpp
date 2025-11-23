@@ -22,7 +22,7 @@
 
 int main(int argc, char **argv)
 {
-    CLI::App app { BOLD CYAN "XLSX JSON Seed - A tool to process XLSX files using YAML scripts, primarily for Firestore Seeding" RESET };
+    CLI::App app { BOLD CYAN "XLSX JSON Seed - A tool to process XLSX files using YAML scripts, primarily for Firestore and other databases seeding" RESET };
 
     std::string config_path;
 
@@ -35,7 +35,8 @@ int main(int argc, char **argv)
 
     std::cout << BOLD BLUE      "──────────────────────────────────────────────────────────────\n" RESET;
     std::cout << BOLD CYAN      "   XLSX-JSON-SEED — Process Excel for Data Seeding via YAML   \n" RESET;
-    std::cout << BOLD PURPLE    "                         by shayyz-code                       \n" RESET;
+    std::cout << BOLD           "                         by " RESET;
+    std::cout << BOLD PURPLE    "shayyz-code                       \n" RESET;
     std::cout << BOLD BLUE      "──────────────────────────────────────────────────────────────\n" RESET;
 
     Config cfg = load_config(config_path);
@@ -67,6 +68,20 @@ int main(int argc, char **argv)
                       << GREEN << "\"" << new_header << "\"" << RESET << "\n";
 
             fill_column_xlsx(ws, cfg.header_row, cfg.first_data_row, col, fill_with, new_header);
+        }
+        else if (op.type == "add-column")
+        {
+            auto at = op.node["at"].as<std::string>();
+            auto fill_with = op.node["fill-with"].as<std::string>();
+            auto new_header = op.node["new-header"].as<std::string>("");
+
+             std::cout << GREEN "✔ " RESET YELLOW "add-column" RESET
+                      << " (" << CYAN << at << RESET << ") with "
+                      << MAGENTA << "\"" << fill_with << "\"" << RESET
+                      << " → by header "
+                      << GREEN << "\"" << new_header << "\"" << RESET << "\n";
+
+            add_column_xlsx(ws, cfg.header_row, cfg.first_data_row, at, fill_with, new_header);
         }
         else if (op.type == "split-column")
         {

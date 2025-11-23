@@ -92,10 +92,15 @@ operations:
     fill-with: "firestore-random-past-date-n-year-2"
     new-header: "Created At"
 
-  # - type: add-column
-  #   at: "end"
-  #   fill-with: "firestore-now"
-  #   new-header: "Updated At"
+  - type: add-column
+    at: "end"
+    fill-with: "firestore-now"
+    new-header: "Updated At"
+
+  - type: add-column
+    at: "start"
+    fill-with: "prefix"
+    new-header: "Prefix"
 
   - type: transform-row
     row: 1
@@ -110,28 +115,34 @@ JSON:
 ```json
 [
   {
+    "prefix": "prefix",
     "no": "1",
     "product_code": "VG-WHITE",
     "product_name": "V Shirt",
     "part1": "VG",
     "part2": "WHITE",
-    "created_at": { "__fire_ts_from_date__": "2025-11-04T09:16:53Z" }
+    "created_at": { "__fire_ts_from_date__": "2024-12-16T02:12:23Z" },
+    "updated_at": "__fire_ts_now__"
   },
   {
+    "prefix": "prefix",
     "no": "2",
     "product_code": "GH-BLUE",
     "product_name": "G Handbag",
     "part1": "GH",
     "part2": "BLUE",
-    "created_at": { "__fire_ts_from_date__": "2025-06-22T04:15:27Z" }
+    "created_at": { "__fire_ts_from_date__": "2025-09-29T03:25:29Z" },
+    "updated_at": "__fire_ts_now__"
   },
   {
+    "prefix": "prefix",
     "no": "3",
     "product_code": "BN-PURPLE",
     "product_name": "B Necklace",
     "part1": "BN",
     "part2": "PURPLE",
-    "created_at": { "__fire_ts_from_date__": "2025-06-01T02:42:09Z" }
+    "created_at": { "__fire_ts_from_date__": "2024-03-05T04:58:04Z" },
+    "updated_at": "__fire_ts_now__"
   }
 ]
 ```
@@ -139,10 +150,11 @@ JSON:
 CSV:
 
 ```csv
-no,product_code,product_name,part1,part2,created_at
-1,VG-WHITE,V Shirt,VG,WHITE,"{ ""__fire_ts_from_date__"": ""2024-06-01T03:17:31Z"" }"
-2,GH-BLUE,G Handbag,GH,BLUE,"{ ""__fire_ts_from_date__"": ""2024-11-07T15:13:24Z"" }"
-3,BN-PURPLE,B Necklace,BN,PURPLE,"{ ""__fire_ts_from_date__"": ""2024-03-05T20:29:55Z"" }"
+prefix,no,product_code,product_name,part1,part2,created_at,updated_at
+prefix,1,VG-WHITE,V Shirt,VG,WHITE,"{ ""__fire_ts_from_date__"": ""2024-12-16T02:12:23Z"" }",__fire_ts_now__
+prefix,2,GH-BLUE,G Handbag,GH,BLUE,"{ ""__fire_ts_from_date__"": ""2025-09-29T03:25:29Z"" }",__fire_ts_now__
+prefix,3,BN-PURPLE,B Necklace,BN,PURPLE,"{ ""__fire_ts_from_date__"": ""2024-03-05T04:58:04Z"" }",__fire_ts_now__
+
 ```
 
 ## How to Contribute

@@ -16,9 +16,35 @@ bool str_starts_with(const std::string &s, const std::string &prefix)
     return std::equal(prefix.begin(), prefix.end(), s.begin());
 }
 
-int col_to_index(const std::string &col)
+// -----------------------------
+// Column name <-> index helpers
+// -----------------------------
+// "A" -> 1, "Z" -> 26, "AA" -> 27
+std::uint32_t col_to_index(const std::string &col)
 {
-    return col[0] - 'A';
+    std::uint32_t result = 0;
+    for (char ch : col)
+    {
+        if (ch >= 'a' && ch <= 'z') ch = ch - 'a' + 'A';
+        if (ch < 'A' || ch > 'Z') throw std::invalid_argument("Invalid column name: " + col);
+        result = result * 26 + (static_cast<std::uint32_t>(ch - 'A') + 1);
+    }
+    return result;
+}
+
+// 1 -> "A", 27 -> "AA"
+std::string index_to_col(std::uint32_t index)
+{
+    if (index == 0) throw std::invalid_argument("Column index must be >= 1");
+    std::string s;
+    while (index > 0)
+    {
+        --index;
+        char ch = static_cast<char>('A' + (index % 26));
+        s.insert(s.begin(), ch);
+        index /= 26;
+    }
+    return s;
 }
 
 std::string to_upper(const std::string &str)

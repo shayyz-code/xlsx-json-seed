@@ -25,10 +25,15 @@ operations:
     fill-with: "firestore-random-past-date-n-year-2"
     new-header: "Created At"
 
-  # - type: add-column
-  #   at: "end"
-  #   fill-with: "firestore-now"
-  #   new-header: "Updated At"
+  - type: add-column
+    at: "end"
+    fill-with: "firestore-now"
+    new-header: "Updated At"
+
+  - type: add-column
+    at: "start"
+    fill-with: "prefix"
+    new-header: "Prefix"
 
   - type: transform-row
     row: 1

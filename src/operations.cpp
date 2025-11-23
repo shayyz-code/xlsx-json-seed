@@ -57,6 +57,98 @@ void fill_column_xlsx(
     }
 }
 
+void add_column_xlsx(
+    xlnt::worksheet &ws,
+    const std::uint32_t header_row,
+    const std::uint32_t first_data_row,
+    const std::string &at,             // either "end" or column letters like "C" or "AA"
+    const std::string &fill_with,
+    const std::string &new_header
+)
+{
+    // determine used range
+    xlnt::range_reference dims = ws.calculate_dimension();
+    const std::uint32_t first_row = dims.top_left().row();
+    const std::uint32_t last_row  = dims.bottom_right().row();
+    const std::uint32_t first_col = dims.top_left().column().index;
+    const std::uint32_t last_col  = dims.bottom_right().column().index;
+
+    // figure out insertion index (1-based)
+    std::uint32_t insert_at = 0;
+    if (at == "end")
+    {
+        insert_at = last_col + 1; // append after last column
+    }
+    else if (at == "beginning" || at == "start")
+    {
+        insert_at = 1; // insert at column A
+    }
+    else
+    {
+        insert_at = col_to_index(at);
+        if (insert_at < 1) throw std::invalid_argument("Invalid insert column: " + at);
+    }
+
+    // if insert_at is beyond last_col+1, we can just create an empty column at that index
+    // ensure we move columns only if insert_at <= last_col
+    if (insert_at <= last_col)
+    {
+        // Shift columns right: for each row, move values from last_col..insert_at to +1
+        // iterate rows from bottom to top to avoid overwriting
+        for (std::uint32_t row = first_row; row <= last_row; ++row)
+        {
+            // move right-to-left
+            for (std::int64_t col = static_cast<std::int64_t>(last_col); col >= static_cast<std::int64_t>(insert_at); --col)
+            {
+                xlnt::cell src = ws.cell(static_cast<std::uint32_t>(col), row);
+                xlnt::cell dst = ws.cell(static_cast<std::uint32_t>(col + 1), row);
+
+                // Copy contents
+                if (src.has_formula())
+                {
+                    dst.formula(src.formula());
+                }
+                else if (src.data_type() == xlnt::cell_type::number)
+                {
+                    dst.value(src.value<double>());
+                }
+                else if (src.data_type() == xlnt::cell_type::boolean)
+                {
+                    dst.value(src.value<bool>());
+                }
+                else if (src.data_type() == xlnt::cell_type::inline_string ||
+                         src.data_type() == xlnt::cell_type::shared_string ||
+                         src.data_type() == xlnt::cell_type::formula_string)
+                {
+                    dst.value(src.to_string());
+                }
+                else
+                {
+                    dst.value(src.to_string()); // fallback for dates, errors, etc.
+                }
+
+                // Clear source
+                if (src.has_formula())
+                    src.formula("");
+
+                src.value("");   // Valid for all xlnt versions
+
+            }
+        }
+    }
+    else
+    {
+        // insert_at is after last_col: nothing to shift; we just create empty cells if needed
+        // nothing needed here; writing later will create cells
+    }
+
+    // Column letters for new column
+    const std::string new_col_letters = index_to_col(insert_at);
+
+    // Fill the column using your existing helper (which expects column letters)
+    fill_column_xlsx(ws, header_row, first_data_row, new_col_letters, fill_with, new_header);
+}
+
 
 void split_column_xlsx(
     xlnt::worksheet &ws,
