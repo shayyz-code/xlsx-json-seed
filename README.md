@@ -1,10 +1,16 @@
-# xlsx-json-seed
+```
+██  ██ ██     ▄█████ ██  ██      ██ ▄█████ ▄████▄ ███  ██   ▄█████ ██████ ██████ ████▄
+ ████  ██     ▀▀▀▄▄▄  ████       ██ ▀▀▀▄▄▄ ██  ██ ██ ▀▄██   ▀▀▀▄▄▄ ██▄▄   ██▄▄   ██  ██
+██  ██ ██████ █████▀ ██  ██   ████▀ █████▀ ▀████▀ ██   ██   █████▀ ██▄▄▄▄ ██▄▄▄▄ ████▀
+```
 
 ![c++](https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
 ![cmake](https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white)
 ![MIT](https://img.shields.io/badge/MIT-green?style=for-the-badge)
 
-A **Blazingly Fast, Nitro-Boosted** tool for processing and automating Excel (.xlsx) data for any database seeding using a simple **YAML instruction file**.
+# XLSX JSON Seed
+
+A **Blazingly Fast, Nitro-Boosted** tool for processing and automating Excel (.xlsx) data for any databases using a simple **YAML instruction file**.
 
 Can be used together with [**json-firestore-seed**](https://github.com/shayyz-code/json-firestore-seed) to process **firestore data entry**.
 
@@ -38,7 +44,7 @@ cd xlsx-json-seed
 ### 2. Install dependencies via vcpkg (not with manifest mode)
 
 ```bash
-vcpkg install xlnt yaml-cpp
+vcpkg install openxlsx yaml-cpp
 ```
 
 Or with manifest mode:
@@ -68,7 +74,7 @@ build/xlsx_json_seed
 
 ## Example
 
-config.yaml and input.xlsx can be found in [./example](./example).
+_config.yaml_ and _input.xlsx_ can be found in [./example](./example).
 
 ```yaml
 input: "example/input.xlsx"
@@ -113,6 +119,10 @@ operations:
   #   to: "camelCase"
   #   delimiter: " "
 
+  - type: rename-header
+    column: A
+    new-name: "New Prefix"
+
   - type: transform-header
     to: "snake_case"
     delimiter: " "
@@ -125,33 +135,33 @@ JSON:
 ```json
 [
   {
-    "prefix": "prefix",
+    "new_prefix": "prefix",
     "no": "1",
     "product_code": "VG-WHITE",
     "product_name": "V Shirt",
     "part1": "VG",
     "part2": "WHITE",
-    "created_at": { "__fire_ts_from_date__": "2024-03-09T08:09:23Z" },
+    "created_at": { "__fire_ts_from_date__": "2025-08-19T16:46:05Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
-    "prefix": "prefix",
+    "new_prefix": "prefix",
     "no": "2",
     "product_code": "GH-BLUE",
     "product_name": "G Handbag",
     "part1": "GH",
     "part2": "BLUE",
-    "created_at": { "__fire_ts_from_date__": "2025-07-25T08:05:24Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-12-10T22:55:11Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
-    "prefix": "prefix",
+    "new_prefix": "prefix",
     "no": "3",
     "product_code": "BN-PURPLE",
     "product_name": "B Necklace",
     "part1": "BN",
     "part2": "PURPLE",
-    "created_at": { "__fire_ts_from_date__": "2025-11-04T21:29:03Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-02-07T22:53:14Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]
@@ -160,10 +170,10 @@ JSON:
 CSV:
 
 ```csv
-prefix,no,product_code,product_name,part1,part2,created_at,updated_at
-prefix,1,VG-WHITE,V Shirt,VG,WHITE,"{ ""__fire_ts_from_date__"": ""2024-03-09T08:09:23Z"" }",__fire_ts_now__
-prefix,2,GH-BLUE,G Handbag,GH,BLUE,"{ ""__fire_ts_from_date__"": ""2025-07-25T08:05:24Z"" }",__fire_ts_now__
-prefix,3,BN-PURPLE,B Necklace,BN,PURPLE,"{ ""__fire_ts_from_date__"": ""2025-11-04T21:29:03Z"" }",__fire_ts_now__
+new_prefix,no,product_code,product_name,part1,part2,created_at,updated_at
+prefix,1,VG-WHITE,V Shirt,VG,WHITE,"{ ""__fire_ts_from_date__"": ""2025-08-19T16:46:05Z"" }",__fire_ts_now__
+prefix,2,GH-BLUE,G Handbag,GH,BLUE,"{ ""__fire_ts_from_date__"": ""2024-12-10T22:55:11Z"" }",__fire_ts_now__
+prefix,3,BN-PURPLE,B Necklace,BN,PURPLE,"{ ""__fire_ts_from_date__"": ""2024-02-07T22:53:14Z"" }",__fire_ts_now__
 ```
 
 ## How to Contribute

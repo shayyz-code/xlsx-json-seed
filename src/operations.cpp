@@ -374,3 +374,16 @@ void transform_header_nitro(
         }
     }
 }
+
+void rename_header_nitro(
+    NitroSheet &sheet,
+    const std::size_t col_index,
+    const std::string new_name)
+{
+    if (sheet.cols.empty())
+        return;
+
+    Column &col = sheet.cols[col_index];
+
+    col.header = new_name;
+}

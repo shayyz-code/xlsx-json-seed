@@ -150,6 +150,13 @@ int main(int argc, char **argv)
             else
                 transform_header_nitro(sheet, to);
         }
+        else if (op.type == "rename-header")
+        {
+            auto column = op.node["column"].as<std::string>();
+            auto new_name = op.node["new-name"].as<std::string>("");
+
+            rename_header_nitro(sheet, col_to_index(column), new_name);
+        }
 
         // ---- refresh the progress bar once ----
         op_idx++;
@@ -233,13 +240,24 @@ int main(int argc, char **argv)
 
             std::cout << GREEN "✔ " RESET YELLOW "transform-header" RESET
                      << " (" << CYAN << "header" << RESET << ") "
-                     << MAGENTA << "\"" << "to" << "\"" << RESET
+                     << MAGENTA << "to" << RESET
                      << " → "
                      << GREEN << "\"" << "with " + delim << "\"" << RESET << "\n";
         }
+        else if (op.type == "rename-header")
+        {
+            auto column = op.node["column"].as<std::string>();
+            auto new_name = op.node["new-name"].as<std::string>("");
+
+            std::cout << GREEN "✔ " RESET YELLOW "rename-header" RESET
+                     << " (" << CYAN << column << RESET << ") "
+                     << MAGENTA << "to" << RESET
+                     << " → "
+                     << GREEN << "\"" << new_name << "\"" << RESET << "\n";
+        }
         else
         {
-            std::cerr << RED "✘ Unknown operation type: " << op.type << RESET << "\n" << std::flush;
+            std::cerr << RED "✘ Unknown operation type: " << op.type << RESET << "\n";
         }
     }
 

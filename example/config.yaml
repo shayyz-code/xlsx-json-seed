@@ -40,6 +40,10 @@ operations:
   #   to: "camelCase"
   #   delimiter: " "
 
+  - type: rename-header
+    column: A
+    new-name: "New Prefix"
+
   - type: transform-header
     to: "snake_case"
     delimiter: " "

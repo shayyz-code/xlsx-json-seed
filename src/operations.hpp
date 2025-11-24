@@ -58,3 +58,9 @@ void transform_header_nitro(
     const std::string &to,           // "camelCase", "PascalCase", "snake_case", "upper", "lower"
     std::optional<char> delim = std::nullopt // optional delimiter for camel/pascal
 );
+
+void rename_header_nitro(
+    NitroSheet &sheet,
+    const std::size_t col_index,
+    const std::string new_name
+);
