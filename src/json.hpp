@@ -46,13 +46,33 @@ inline std::string json_escape(const std::string &s)
     return out;
 }
 
-inline bool looks_like_firestore_obj(const std::string &trimmed)
+inline bool looks_like_obj(const std::string &trimmed)
 {
-    if (trimmed.size() < 3) return false;
-    if (trimmed.front() != '{' || trimmed.back() != '}') return false;
-    return trimmed.find("__fire_ts_from_date__") != std::string::npos ||
-           trimmed.find("__fire_ts_now__") != std::string::npos;
+    if (trimmed.size() < 2) return false;
+    return (trimmed.front() == '{' || trimmed.back() == '}');
 }
+
+inline bool looks_like_array(const std::string &trimmed)
+{
+    if (trimmed.size() < 2) return false;
+    return (trimmed.front() == '[' && trimmed.back() == ']');
+}
+
+inline bool is_valid_number(const std::string& trimmed)
+{
+    if (trimmed.size() < 1) return false;
+
+    // Fast check: reject trailing dot
+    if (trimmed.back() == '.') 
+        return false;
+
+    char* end = nullptr;
+    std::strtod(trimmed.c_str(), &end);
+
+    // true only if full string parsed as number
+    return end == trimmed.c_str() + trimmed.size();
+}
+
 
 // ---------- Robust save_json_nitro that matches NitroSheet layout ----------
 inline void save_json_nitro(
@@ -141,8 +161,14 @@ inline void save_json_nitro(
 
             buf += ind2 + "\"" + json_escape(key) + "\": ";
 
-            if (!trimmed.empty() && looks_like_firestore_obj(trimmed))
+            if (!trimmed.empty() && (looks_like_obj(trimmed) || looks_like_array(trimmed)))
             {
+                buf += trimmed;
+            }
+            else if (!trimmed.empty() && (trimmed == "null" || trimmed == "true" || trimmed == "false"
+                     || is_valid_number(trimmed)))
+            {
+                // raw number, bool, or null
                 buf += trimmed;
             }
             else

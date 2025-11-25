@@ -18,6 +18,7 @@ enable_testing()
 find_package(OpenXLSX CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 
 add_library(xlsx_json_seed_lib
     src/openxlsx_adapter.hpp
@@ -47,6 +48,7 @@ target_link_libraries(xlsx_json_seed
         xlsx_json_seed_lib
         OpenXLSX::OpenXLSX
         CLI11::CLI11
+        fmt::fmt
 )
 
 # ---- Tests ----

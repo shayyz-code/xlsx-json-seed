@@ -10,7 +10,7 @@
 
 # XLSX JSON Seed
 
-A **Blazingly Fast, Nitro-Boosted** tool for processing and automating Excel (.xlsx) data for any databases using a simple **YAML instruction file**.
+A **Blazingly Fast, Nitro-Boosted** tool for processing and automating Excel (.xlsx) data for any databases (including Firestore) using a simple **YAML instruction file**.
 
 Can be used together with [**json-firestore-seed**](https://github.com/shayyz-code/json-firestore-seed) to process **firestore data entry**.
 
@@ -22,13 +22,31 @@ See at OpenXLSX's repo [https://github.com/troldal/OpenXLSX](https://github.com/
 
 _OpenXLSX version used in this project is (aral-matrix) 14 July 2025._
 
+# Table of Contents
+
+- [XLSX JSON Seed](#xlsx-json-seed)
+  - [Features](#features)
+  - [Installation](#installation)
+    - [1. Clone the repo](#1-clone-the-repo)
+    - [2. Install dependencies via vcpkg](#2-install-dependencies-via-vcpkg-not-with-manifest-mode)
+    - [3. Build the tool](#3-build-the-tool)
+  - [Usage](#usage)
+  - [Example](#example)
+  - [Result](#result)
+    - [JSON](#json)
+    - [CSV](#csv)
+  - [Operations Reference Table](#operations-reference-table)
+  - [How to Contribute](#how-to-contribute)
+  - [Contributors](#contributors)
+  - [License](#license)
+
 ## Features
 
 - Supports Firestore timestamps (works with [json-firestore-seed](https://github.com/shayyz-code/json-firestore-seed))
 - Read `.xlsx` Excel files your client (customer) gives and convert to json for database schema
 - Export to **JSON**, **CSV** or back to **XLSX**
 - Automate via **YAML scripting**
-- Add, fill, split, uppercase, replace, and more
+- Add, remove, group-as-array, renumbering, fill, split, uppercase, replace, and more
 - Blazingly Fast native runtime
 - Easy to extend with new operations
 
@@ -88,7 +106,7 @@ operations:
   - type: split-column
     column: B
     delimiter: "-"
-    split-to: [D, E]
+    split-to: [E, F]
     new-headers: ["Part1", "Part2"]
 
   # - type: uppercase-column
@@ -100,7 +118,7 @@ operations:
     replace: ","
 
   - type: fill-column
-    column: F
+    column: G
     fill-with: "firestore-random-past-date-n-year-2"
     new-header: "Created At"
 
@@ -113,6 +131,25 @@ operations:
     at: "start"
     fill-with: "prefix"
     new-header: "Prefix"
+
+  - type: sort-rows-by-column
+    column: F
+    ascending: true
+
+  - type: group-collect-to-array
+    group-by: F # column with BN (type column)
+    collect-column: G # colors
+    output-column: G # write array back to color column
+
+  - type: reassign-numbering
+    column: B
+    prefix: ""
+    suffix: "."
+    start-from: 1
+    step: 1
+
+  - type: remove-column
+    column: C
 
   # - type: transform-row
   #   row: 1
@@ -136,32 +173,32 @@ JSON:
 [
   {
     "new_prefix": "prefix",
-    "no": "1",
-    "product_code": "VG-WHITE",
-    "product_name": "V Shirt",
-    "part1": "VG",
-    "part2": "WHITE",
-    "created_at": { "__fire_ts_from_date__": "2025-08-19T16:46:05Z" },
-    "updated_at": "__fire_ts_now__"
-  },
-  {
-    "new_prefix": "prefix",
-    "no": "2",
-    "product_code": "GH-BLUE",
-    "product_name": "G Handbag",
-    "part1": "GH",
-    "part2": "BLUE",
-    "created_at": { "__fire_ts_from_date__": "2024-12-10T22:55:11Z" },
-    "updated_at": "__fire_ts_now__"
-  },
-  {
-    "new_prefix": "prefix",
-    "no": "3",
-    "product_code": "BN-PURPLE",
+    "no": "1.",
     "product_name": "B Necklace",
+    "price": 1000,
     "part1": "BN",
-    "part2": "PURPLE",
-    "created_at": { "__fire_ts_from_date__": "2024-02-07T22:53:14Z" },
+    "part2": ["PURPLE", "RED"],
+    "created_at": { "__fire_ts_from_date__": "2024-03-12T06:38:17Z" },
+    "updated_at": "__fire_ts_now__"
+  },
+  {
+    "new_prefix": "prefix",
+    "no": "2.",
+    "product_name": "G Handbag",
+    "price": 200,
+    "part1": "GH",
+    "part2": ["BLUE", "BROWN"],
+    "created_at": { "__fire_ts_from_date__": "2025-06-28T03:25:01Z" },
+    "updated_at": "__fire_ts_now__"
+  },
+  {
+    "new_prefix": "prefix",
+    "no": "3.",
+    "product_name": "V Shirt",
+    "price": 60,
+    "part1": "VG",
+    "part2": ["WHITE"],
+    "created_at": { "__fire_ts_from_date__": "2024-11-20T06:08:32Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]
@@ -170,11 +207,28 @@ JSON:
 CSV:
 
 ```csv
-new_prefix,no,product_code,product_name,part1,part2,created_at,updated_at
-prefix,1,VG-WHITE,V Shirt,VG,WHITE,"{ ""__fire_ts_from_date__"": ""2025-08-19T16:46:05Z"" }",__fire_ts_now__
-prefix,2,GH-BLUE,G Handbag,GH,BLUE,"{ ""__fire_ts_from_date__"": ""2024-12-10T22:55:11Z"" }",__fire_ts_now__
-prefix,3,BN-PURPLE,B Necklace,BN,PURPLE,"{ ""__fire_ts_from_date__"": ""2024-02-07T22:53:14Z"" }",__fire_ts_now__
+new_prefix,no,product_name,price,part1,part2,created_at,updated_at
+prefix,1.,B Necklace,1000,BN,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2024-03-12T06:38:17Z"" }",__fire_ts_now__
+prefix,2.,G Handbag,200,GH,"[""BLUE"",""BROWN""]","{ ""__fire_ts_from_date__"": ""2025-06-28T03:25:01Z"" }",__fire_ts_now__
+prefix,3.,V Shirt,60,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2024-11-20T06:08:32Z"" }",__fire_ts_now__
 ```
+
+## Operations Reference Table
+
+| **Operation Type**       | **Description**                                                               | **Required Fields**                              | **Optional Fields**                  |
+| ------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------ |
+| `split-column`           | Splits a column into multiple parts by a delimiter.                           | `column`, `delimiter`, `split-to`, `new-headers` | —                                    |
+| `replace-in-column`      | Replaces occurrences of a substring within a column.                          | `column`, `find`, `replace`                      | —                                    |
+| `fill-column`            | Fills a column with a constant value and optionally renames the header.       | `column`, `fill-with`                            | `new-header`                         |
+| `add-column`             | Adds a column at the start, end, before, or after another column.             | `at`, `fill-with`, `new-header`                  | —                                    |
+| `uppercase-column`       | Converts the entire column to uppercase.                                      | `column`                                         | —                                    |
+| `sort-rows-by-column`    | Sorts rows by a given column (ascending/descending).                          | `column`                                         | `ascending` (default `true`)         |
+| `group-collect-to-array` | Groups rows by one column and creates an array of values from another column. | `group-by`, `collect-column`, `output-column`    | —                                    |
+| `reassign-numbering`     | Replaces a numeric column with a new sequence number format.                  | `column`, `prefix`, `suffix`                     | `start-from` (default 1), `step` (1) |
+| `remove-column`          | Deletes a column entirely.                                                    | `column`                                         | —                                    |
+| `rename-header`          | Renames a column header.                                                      | `column`, `new-name`                             | —                                    |
+| `transform-row`          | Transforms one row into another format (camelCase, snake_case, etc.).         | `row`, `to`                                      | `delimiter`                          |
+| `transform-header`       | Transforms all headers (camelCase, snake_case, etc.).                         | `to`                                             | `delimiter`                          |
 
 ## How to Contribute
 

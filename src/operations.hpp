@@ -22,6 +22,11 @@ void add_column_nitro(
     const std::string &new_header
 );
 
+void remove_column_nitro(
+    NitroSheet &sheet,
+    const size_t col_index         // 0-based column index
+);
+
 void split_column_nitro(
     NitroSheet &sheet,
     const std::uint32_t header_row,              // 1-based Excel header row
@@ -63,4 +68,26 @@ void rename_header_nitro(
     NitroSheet &sheet,
     const std::size_t col_index,
     const std::string new_name
+);
+
+void group_collect_to_array_nitro(
+    NitroSheet &sheet,
+    std::size_t group_col,
+    std::size_t collect_col,
+    std::size_t output_col
+);
+
+void sort_rows_by_column_nitro(
+    NitroSheet &sheet,
+    const std::size_t col_index,
+    const bool ascending
+);
+
+void reassign_numbering_nitro(
+    NitroSheet &sheet,
+    const std::size_t col_index,
+    const std::string &prefix,
+    const std::string &suffix,
+    const size_t start_number,
+    const size_t step
 );

@@ -118,6 +118,19 @@ void add_column_nitro(
     fill_column_nitro(sheet, header_row, first_data_row, insert_at, fill_with, new_header);
 }
 
+// ----------------------
+// Remove a column from NitroSheet
+// ----------------------
+void remove_column_nitro(
+    NitroSheet &sheet,
+    const size_t col_index         // 0-based column index
+)
+{
+    if (col_index >= sheet.cols.size())
+        return; // nothing to do
+
+    sheet.cols.erase(sheet.cols.begin() + col_index);
+}
 
 // fast split by single char (avoids stringstream)
 void split_simple(const std::string &s, char delim, std::vector<std::string> &out_parts)
@@ -386,4 +399,159 @@ void rename_header_nitro(
     Column &col = sheet.cols[col_index];
 
     col.header = new_name;
+}
+
+void group_collect_to_array_nitro(
+    NitroSheet &sheet,
+    std::size_t group_col,
+    std::size_t collect_col,
+    std::size_t output_col)
+{
+    if (sheet.cols.empty())
+        return;
+
+    std::string current_key;
+    std::vector<std::string> collected;
+
+    std::vector<bool> keep_row(sheet.num_rows, true);
+
+    std::size_t first_row_index = 0;
+
+    // Pass 1: collect values + mark duplicate rows for deletion
+    for (std::size_t r = 0; r < sheet.num_rows; ++r)
+    {
+        const std::string &key = sheet.cols[group_col].vals[r];
+        const std::string &val = sheet.cols[collect_col].vals[r];
+
+        if (r == 0)
+        {
+            current_key = key;
+            if (!val.empty()) collected.push_back(val);
+            continue;
+        }
+
+        if (key != current_key)
+        {
+            // flush collected to the first row
+            std::string json = "[";
+            for (size_t i = 0; i < collected.size(); ++i)
+            {
+                json += "\"" + collected[i] + "\"";
+                if (i + 1 < collected.size()) json += ",";
+            }
+            json += "]";
+
+            sheet.cols[output_col].vals[first_row_index] = json;
+
+            // start new group
+            current_key = key;
+            collected.clear();
+            if (!val.empty()) collected.push_back(val);
+            first_row_index = r;
+        }
+        else
+        {
+            // same group → keep only first row
+            keep_row[r] = false;
+            if (!val.empty()) collected.push_back(val);
+        }
+    }
+
+    // Final flush
+    if (!collected.empty())
+    {
+        std::string json = "[";
+        for (size_t i = 0; i < collected.size(); ++i)
+        {
+            json += "\"" + collected[i] + "\"";
+            if (i + 1 < collected.size()) json += ",";
+        }
+        json += "]";
+
+        sheet.cols[output_col].vals[first_row_index] = json;
+    }
+
+    // Pass 2: Physically remove duplicate rows
+    size_t write_index = 0;
+    for (size_t r = 0; r < sheet.num_rows; ++r)
+    {
+        if (keep_row[r])
+        {
+            if (write_index != r)
+            {
+                for (auto &col : sheet.cols)
+                    col.vals[write_index] = std::move(col.vals[r]);
+            }
+            write_index++;
+        }
+    }
+
+    // Resize all columns
+    for (auto &col : sheet.cols)
+        col.vals.resize(write_index);
+
+    sheet.num_rows = write_index;
+}
+
+void sort_rows_by_column_nitro(
+    NitroSheet &sheet,
+    const std::size_t col_index,
+    const bool ascending
+)
+{
+    if (sheet.cols.empty() || col_index >= sheet.cols.size())
+        return;
+
+    const size_t total_rows = sheet.num_rows;
+    if (total_rows == 0)
+        return;
+
+    // Create index vector
+    std::vector<size_t> indices(total_rows);
+    for (size_t i = 0; i < total_rows; ++i)
+        indices[i] = i;
+
+    // Sort indices based on the target column's values
+    Column &col = sheet.cols[col_index];
+    std::sort(indices.begin(), indices.end(),
+        [&](size_t a, size_t b) {
+            if (ascending)
+                return col.vals[a] < col.vals[b];
+            else
+                return col.vals[a] > col.vals[b];
+        });
+
+    // Reorder all columns based on sorted indices
+    for (auto &column : sheet.cols)
+    {
+        std::vector<std::string> sorted_vals(total_rows);
+        for (size_t i = 0; i < total_rows; ++i)
+        {
+            sorted_vals[i] = std::move(column.vals[indices[i]]);
+        }
+        column.vals = std::move(sorted_vals);
+    }
+}
+
+void reassign_numbering_nitro(
+    NitroSheet &sheet,
+    const std::size_t col_index,
+    const std::string &prefix,
+    const std::string &suffix,
+    const size_t start_number,
+    const size_t step
+)
+{
+    if (sheet.cols.empty() || col_index >= sheet.cols.size())
+        return;
+
+    Column &col = sheet.cols[col_index];
+
+    size_t number = start_number;
+
+    for (size_t r = 0; r < sheet.num_rows; ++r)
+    {
+        col.vals[r] = prefix + std::to_string(number) + suffix;
+        number += step;
+    }
 }

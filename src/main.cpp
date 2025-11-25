@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include <OpenXLSX.hpp>
 #include <CLI/CLI.hpp>
 #include "config.hpp"
@@ -7,6 +8,9 @@
 #include "json.hpp"
 #include "nitro_sheet.hpp"
 #include "progress.hpp"
+
+#define FMT_HEADER_ONLY
+#include "fmt/core.h"
 
 // color macros
 #define RESET   "\033[0m"
@@ -63,14 +67,24 @@ int main(int argc, char **argv)
 
     std::cout << BOLD WHITE "#  Running operations..." RESET << "\n\n" << std::flush;
 
+    std::vector<std::string> logs;
+
+
+
     std::size_t total_ops = cfg.operations.size();
+
+    logs.reserve(total_ops);
+
     std::size_t op_idx = 0;
 
     // initial 0%
     progress_bar(0, total_ops);
 
+    auto start = std::chrono::high_resolution_clock::now(); // to measure operation time
+
     for (auto &op : cfg.operations)
     {
+        std::string msg; // message to log
 
         if (op.type == "fill-column")
         {
@@ -79,9 +93,17 @@ int main(int argc, char **argv)
             auto new_header = op.node["new-header"].as<std::string>("");
 
             auto col_index = col_to_index(column);
-
              
             fill_column_nitro(sheet, cfg.header_row, cfg.first_data_row, col_index, fill_with, new_header);
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "fill-column" RESET
+                " (" CYAN "{}" RESET ") with "
+                MAGENTA "\"{}\"" RESET
+                " → by header "
+                GREEN "\"{}\"" RESET,
+                column, fill_with, new_header
+            );
         }
         else if (op.type == "add-column")
         {
@@ -89,8 +111,16 @@ int main(int argc, char **argv)
             auto fill_with = op.node["fill-with"].as<std::string>();
             auto new_header = op.node["new-header"].as<std::string>("");
 
-
             add_column_nitro(sheet, cfg.header_row, cfg.first_data_row, at, fill_with, new_header);
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "add-column" RESET
+                " (" CYAN "{}" RESET ") with "
+                MAGENTA "\"{}\"" RESET
+                " → by header "
+                GREEN "\"{}\"" RESET,
+                at, fill_with, new_header
+            );
         }
         else if (op.type == "split-column")
         {
@@ -111,12 +141,24 @@ int main(int argc, char **argv)
                 newHeaders.push_back(h.as<std::string>());
 
             split_column_nitro(sheet, cfg.header_row, cfg.first_data_row, col_to_index(column), delim[0], targets, newHeaders);
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "split-column" RESET
+                " (" CYAN "{}" RESET ")",
+                column
+            );
         }
         else if (op.type == "uppercase-column")
         {
             auto column = op.node["column"].as<std::string>();
 
             uppercase_column_nitro(sheet, cfg.first_data_row, col_to_index(column));
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "uppercase-column" RESET
+                " (" CYAN "{}" RESET ")",
+                column
+            );
         }
         else if (op.type == "replace-in-column")
         {
@@ -125,6 +167,15 @@ int main(int argc, char **argv)
             auto r = op.node["replace"].as<std::string>();
 
             replace_in_column_nitro(sheet, cfg.first_data_row, col_to_index(column), f, r);
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "replace-in-column" RESET
+                " (" CYAN "{}" RESET ") "
+                MAGENTA "\"{}\"" RESET
+                " → "
+                GREEN "\"{}\"" RESET,
+                column, f, r
+            );
         }
         else if (op.type == "transform-row")
         {
@@ -138,6 +189,13 @@ int main(int argc, char **argv)
                 transform_row_nitro(sheet, row_index, to, delim[0]);
             else
                 transform_row_nitro(sheet, row_index, to);
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "transform-row" RESET
+                " (" CYAN "{}" RESET ") → {}{}",
+                row, to,
+                delim.empty() ? "" : (" (delim=" + delim + ")")
+            );
         }
         else if (op.type == "transform-header")
         {
@@ -149,6 +207,13 @@ int main(int argc, char **argv)
                 transform_header_nitro(sheet, to, delim[0]);
             else
                 transform_header_nitro(sheet, to);
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "transform-header" RESET
+                " → {}{}",
+                to,
+                delim.empty() ? "" : (" (delim=" + delim + ")")
+            );
         }
         else if (op.type == "rename-header")
         {
@@ -156,112 +221,99 @@ int main(int argc, char **argv)
             auto new_name = op.node["new-name"].as<std::string>("");
 
             rename_header_nitro(sheet, col_to_index(column), new_name);
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "rename-header" RESET
+                " (" CYAN "{}" RESET ") → {}",
+                column, new_name
+            );
+        }
+        else if (op.type == "sort-rows-by-column")
+        {
+            auto column = op.node["column"].as<std::string>();
+            auto ascending = op.node["ascending"].as<bool>(true);
+
+            sort_rows_by_column_nitro(sheet, col_to_index(column), ascending);
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "sort-rows-by-column" RESET
+                " (" CYAN "{}" RESET ") → {}",
+                column, ascending ? "ascending" : "descending"
+            );
+        }
+        else if (op.type == "group-collect-to-array")
+        {
+            auto group_by_column = op.node["group-by"].as<std::string>();
+            auto collect_column = op.node["collect-column"].as<std::string>();
+            auto output_column = op.node["output-column"].as<std::string>();
+
+            group_collect_to_array_nitro(sheet, col_to_index(group_by_column), col_to_index(collect_column), col_to_index(output_column));
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "group-collect-to-array" RESET
+                " (group=" CYAN "{}" RESET ", collect=" CYAN "{}" RESET ")",
+                group_by_column, collect_column
+            );
+        }
+        else if (op.type == "reassign-numbering")
+        {
+            auto column = op.node["column"].as<std::string>();
+            auto prefix = op.node["prefix"].as<std::string>();
+            auto suffix = op.node["suffix"].as<std::string>();
+            auto start_from = op.node["start-from"].as<std::uint32_t>(1);
+            auto step = op.node["step"].as<std::uint32_t>(1);
+
+            reassign_numbering_nitro(sheet, col_to_index(column), prefix, suffix, start_from, step );
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "reassign-numbering" RESET
+                " (" CYAN "{}" RESET ")",
+                column
+            );
+        }
+        else if (op.type == "remove-column")
+        {
+            auto column = op.node["column"].as<std::string>();
+
+            remove_column_nitro(sheet, col_to_index(column));
+
+            msg = fmt::format(
+                GREEN "✔ " RESET YELLOW "remove-column" RESET
+                " (" CYAN "{}" RESET ")",
+                column
+            );
+        }
+        else {
+            op_idx--; // negate the upcoming increment
+            
+            msg = fmt::format(
+                RED "✘ Unknown operation type: {}" RESET,
+                op.type
+            );
         }
 
         // ---- refresh the progress bar once ----
         op_idx++;
+
+        // Store the formatted message
+        logs.push_back(msg);
+
         progress_bar(op_idx, total_ops);
     }
 
+    auto end = std::chrono::high_resolution_clock::now(); // to measure operation time
+    auto ms = std::chrono::duration<double, std::milli>(end - start).count();
+
+    std::cout << "\n# Computation time: " << ms << " ms\n" << std::flush;
+
+    // ======================================================
+    //  PRINT ALL LOGS AFTER PROCESSING
+    // ======================================================
     std::cout << "\n";
-
-    for (auto &op : cfg.operations)
-    {
-
-        if (op.type == "fill-column")
-        {
-            auto column = op.node["column"].as<std::string>();
-            auto fill_with = op.node["fill-with"].as<std::string>();
-            auto new_header = op.node["new-header"].as<std::string>("");
-
-            std::cout << GREEN "✔ " RESET YELLOW "fill-column" RESET
-                      << " (" << CYAN << column << RESET << ") with "
-                      << MAGENTA << "\"" << fill_with << "\"" << RESET
-                      << " → by header "
-                      << GREEN << "\"" << new_header << "\"" << RESET << "\n";
-        }
-        else if (op.type == "add-column")
-        {
-            auto at = op.node["at"].as<std::string>();
-            auto fill_with = op.node["fill-with"].as<std::string>();
-            auto new_header = op.node["new-header"].as<std::string>("");
-
-            std::cout << GREEN "✔ " RESET YELLOW "add-column" RESET
-                      << " (" << CYAN << at << RESET << ") with "
-                      << MAGENTA << "\"" << fill_with << "\"" << RESET
-                      << " → by header "
-                      << GREEN << "\"" << new_header << "\"" << RESET << "\n";
-        }
-        else if (op.type == "split-column")
-        {
-            auto column = op.node["column"].as<std::string>();
-            auto delim = op.node["delimiter"].as<std::string>();
-            auto targetNodes = op.node["split-to"];
-            auto newHeaderNodes = op.node["new-headers"];
-
-            std::cout << GREEN "✔ " RESET YELLOW "split-column" RESET
-                      << " (" << CYAN << column << RESET << ")\n";
-        }
-        else if (op.type == "uppercase-column")
-        {
-            auto column = op.node["column"].as<std::string>();
-            
-            std::cout << GREEN "✔ " RESET YELLOW "uppercase-column" RESET
-                      << " (" << CYAN << column << RESET << ")\n";
-        }
-        else if (op.type == "replace-in-column")
-        {
-            auto column = op.node["column"].as<std::string>();
-            auto f = op.node["find"].as<std::string>();
-            auto r = op.node["replace"].as<std::string>();
-
-            std::cout << GREEN "✔ " RESET YELLOW "replace-in-column" RESET
-                     << " (" << CYAN << column << RESET << ") "
-                     << MAGENTA << "\"" << f << "\"" << RESET
-                     << " → "
-                     << GREEN << "\"" << r << "\"" << RESET << "\n";
-        }
-        else if (op.type == "transform-row")
-        {
-            auto row = op.node["row"].as<std::uint32_t>();
-            auto to = op.node["to"].as<std::string>();
-            auto delim = op.node["delimiter"].as<std::string>("");
-
-            std::cout << GREEN "✔ " RESET YELLOW "transform-row" RESET
-                     << " (" << CYAN << row << RESET << ") "
-                     << MAGENTA << "\"" << "to" << "\"" << RESET
-                     << " → "
-                     << GREEN << "\"" << "with " + delim << "\"" << RESET << "\n";
-        }
-        else if (op.type == "transform-header")
-        {
-            auto to = op.node["to"].as<std::string>();
-            auto delim = op.node["delimiter"].as<std::string>("");
-
-            std::cout << GREEN "✔ " RESET YELLOW "transform-header" RESET
-                     << " (" << CYAN << "header" << RESET << ") "
-                     << MAGENTA << "to" << RESET
-                     << " → "
-                     << GREEN << "\"" << "with " + delim << "\"" << RESET << "\n";
-        }
-        else if (op.type == "rename-header")
-        {
-            auto column = op.node["column"].as<std::string>();
-            auto new_name = op.node["new-name"].as<std::string>("");
-
-            std::cout << GREEN "✔ " RESET YELLOW "rename-header" RESET
-                     << " (" << CYAN << column << RESET << ") "
-                     << MAGENTA << "to" << RESET
-                     << " → "
-                     << GREEN << "\"" << new_name << "\"" << RESET << "\n";
-        }
-        else
-        {
-            std::cerr << RED "✘ Unknown operation type: " << op.type << RESET << "\n";
-        }
-    }
-
-    std::cout << "\n" << std::flush;
+    for (auto &s : logs)
+        std::cout << s << "\n";
+    std::cout << std::flush;
+    
 
 
     save_json_nitro(sheet, cfg.header_row, cfg.first_data_row, cfg.output_file + ".json");

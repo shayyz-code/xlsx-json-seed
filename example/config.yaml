@@ -9,7 +9,7 @@ operations:
   - type: split-column
     column: B
     delimiter: "-"
-    split-to: [D, E]
+    split-to: [E, F]
     new-headers: ["Part1", "Part2"]
 
   # - type: uppercase-column
@@ -21,7 +21,7 @@ operations:
     replace: ","
 
   - type: fill-column
-    column: F
+    column: G
     fill-with: "firestore-random-past-date-n-year-2"
     new-header: "Created At"
 
@@ -34,6 +34,25 @@ operations:
     at: "start"
     fill-with: "prefix"
     new-header: "Prefix"
+
+  - type: sort-rows-by-column
+    column: F
+    ascending: true
+
+  - type: group-collect-to-array
+    group-by: F # column with BN (type column)
+    collect-column: G # colors
+    output-column: G # write array back to color column
+
+  - type: reassign-numbering
+    column: B
+    prefix: ""
+    suffix: "."
+    start-from: 1
+    step: 1
+
+  - type: remove-column
+    column: C
 
   # - type: transform-row
   #   row: 1
