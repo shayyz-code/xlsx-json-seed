@@ -141,6 +141,7 @@ operations:
     group-by: F # column with BN (type column)
     to-array-column: G # colors
     to-array-output-column: G # write array back to color column
+    mark-unique-items: true # colors will not duplicate
     do-maths-column: E
     do-maths-operation: "sum"
 
@@ -181,17 +182,17 @@ JSON:
     "price": 2000.0,
     "part1": "BN",
     "colors": ["PURPLE", "RED"],
-    "created_at": { "__fire_ts_from_date__": "2024-02-21T01:31:14Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-10-21T13:34:26Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
     "dynamic_value": "GH and BLUE",
     "no": "2.",
     "product_name": "G Handbag",
-    "price": 500.0,
+    "price": 700.0,
     "part1": "GH",
     "colors": ["BLUE", "BROWN"],
-    "created_at": { "__fire_ts_from_date__": "2024-12-25T13:13:46Z" },
+    "created_at": { "__fire_ts_from_date__": "2025-07-20T10:47:30Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
@@ -201,7 +202,7 @@ JSON:
     "price": 60.0,
     "part1": "VG",
     "colors": ["WHITE"],
-    "created_at": { "__fire_ts_from_date__": "2024-12-04T15:30:28Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-03-10T17:45:46Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]
@@ -211,27 +212,27 @@ CSV:
 
 ```csv
 dynamic_value,no,product_name,price,part1,colors,created_at,updated_at
-BN and PURPLE,1,B Necklace,2000.0,BN,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2024-02-21T01:31:14Z"" }",__fire_ts_now__
-GH and BLUE,2,G Handbag,500.0,GH,"[""BLUE"",""BROWN""]","{ ""__fire_ts_from_date__"": ""2024-12-25T13:13:46Z"" }",__fire_ts_now__
-VG and WHITE,3,V Shirt,60.0,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2024-12-04T15:30:28Z"" }",__fire_ts_now__
+BN and PURPLE,1,B Necklace,2000.0,BN,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2024-10-21T13:34:26Z"" }",__fire_ts_now__
+GH and BLUE,2,G Handbag,700.0,GH,"[""BLUE"",""BROWN""]","{ ""__fire_ts_from_date__"": ""2025-07-20T10:47:30Z"" }",__fire_ts_now__
+VG and WHITE,3,V Shirt,60.0,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2024-03-10T17:45:46Z"" }",__fire_ts_now__
 ```
 
 ## Operations Reference Table
 
-| **Operation Type**    | **Description**                                                                    | **Required Fields**                                                                              | **Optional Fields**                  |
-| --------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| `split-column`        | Splits a column into multiple parts by a delimiter.                                | `column`, `delimiter`, `split-to`, `new-headers`                                                 | —                                    |
-| `replace-in-column`   | Replaces occurrences of a substring within a column.                               | `column`, `find`, `replace`                                                                      | —                                    |
-| `fill-column`         | Fills a column with a constant or dyanmic value and optionally renames the header. | `column`, `fill-with` <br />// Dynamic -> ${col F}                                               | `new-header`                         |
-| `add-column`          | Adds a column at the start, end, before, or after another column.                  | `at`, `fill-with`, `new-header`                                                                  | —                                    |
-| `uppercase-column`    | Converts the entire column to uppercase.                                           | `column`                                                                                         | —                                    |
-| `sort-rows-by-column` | Sorts rows by a given column (ascending/descending).                               | `column`                                                                                         | `ascending` (default `true`)         |
-| `group-collect`       | Groups rows as array and do math operations at the same time in a row.             | `group-by`, `to-array-column`, `to-array-output-column`, `do-maths-column`, `do-maths-operation` | —                                    |
-| `reassign-numbering`  | Replaces a numeric column with a new sequence number format.                       | `column`, `prefix`, `suffix`                                                                     | `start-from` (default 1), `step` (1) |
-| `remove-column`       | Deletes a column entirely.                                                         | `column`                                                                                         | —                                    |
-| `rename-header`       | Renames a column header.                                                           | `column`, `new-name`                                                                             | —                                    |
-| `transform-row`       | Transforms one row into another format (camelCase, snake_case, etc.).              | `row`, `to`                                                                                      | `delimiter`                          |
-| `transform-header`    | Transforms all headers (camelCase, snake_case, etc.).                              | `to`                                                                                             | `delimiter`                          |
+| **Operation Type**    | **Description**                                                                    | **Required Fields**                                                                                                   | **Optional Fields**                  |
+| --------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `split-column`        | Splits a column into multiple parts by a delimiter.                                | `column`, `delimiter`, `split-to`, `new-headers`                                                                      | —                                    |
+| `replace-in-column`   | Replaces occurrences of a substring within a column.                               | `column`, `find`, `replace`                                                                                           | —                                    |
+| `fill-column`         | Fills a column with a constant or dyanmic value and optionally renames the header. | `column`, `fill-with` <br />// Dynamic -> ${col F}                                                                    | `new-header`                         |
+| `add-column`          | Adds a column at the start, end, before, or after another column.                  | `at`, `fill-with`, `new-header`                                                                                       | —                                    |
+| `uppercase-column`    | Converts the entire column to uppercase.                                           | `column`                                                                                                              | —                                    |
+| `sort-rows-by-column` | Sorts rows by a given column (ascending/descending).                               | `column`                                                                                                              | `ascending` (default `true`)         |
+| `group-collect`       | Groups rows as array and do math operations at the same time in a row.             | `group-by`, `to-array-column`, `to-array-output-column`, `mark-unique-items`, `do-maths-column`, `do-maths-operation` | —                                    |
+| `reassign-numbering`  | Replaces a numeric column with a new sequence number format.                       | `column`, `prefix`, `suffix`                                                                                          | `start-from` (default 1), `step` (1) |
+| `remove-column`       | Deletes a column entirely.                                                         | `column`                                                                                                              | —                                    |
+| `rename-header`       | Renames a column header.                                                           | `column`, `new-name`                                                                                                  | —                                    |
+| `transform-row`       | Transforms one row into another format (camelCase, snake_case, etc.).              | `row`, `to`                                                                                                           | `delimiter`                          |
+| `transform-header`    | Transforms all headers (camelCase, snake_case, etc.).                              | `to`                                                                                                                  | `delimiter`                          |
 
 ## How to Contribute
 

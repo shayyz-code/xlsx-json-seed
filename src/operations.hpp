@@ -75,6 +75,7 @@ void group_collect_nitro(
     std::size_t group_col,
     std::size_t collect_col,
     std::size_t output_col,
+    bool marked_unique,
     std::size_t do_maths_col,
     const std::string &do_maths_operation
 );

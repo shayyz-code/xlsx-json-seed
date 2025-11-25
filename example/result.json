@@ -6,17 +6,17 @@
     "price": 2000.0,
     "part1": "BN",
     "colors": ["PURPLE","RED"],
-    "created_at": { "__fire_ts_from_date__": "2024-02-21T01:31:14Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-10-21T13:34:26Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
     "dynamic_value": "GH and BLUE",
     "no": "2.",
     "product_name": "G Handbag",
-    "price": 500.0,
+    "price": 700.0,
     "part1": "GH",
     "colors": ["BLUE","BROWN"],
-    "created_at": { "__fire_ts_from_date__": "2024-12-25T13:13:46Z" },
+    "created_at": { "__fire_ts_from_date__": "2025-07-20T10:47:30Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
@@ -26,7 +26,7 @@
     "price": 60.0,
     "part1": "VG",
     "colors": ["WHITE"],
-    "created_at": { "__fire_ts_from_date__": "2024-12-04T15:30:28Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-03-10T17:45:46Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]

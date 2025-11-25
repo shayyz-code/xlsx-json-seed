@@ -438,6 +438,7 @@ void group_collect_nitro(
     std::size_t group_col,
     std::size_t collect_col,
     std::size_t output_col,
+    bool marked_unique,
     std::size_t do_maths_col,
     const std::string &do_maths_operation)
 {
@@ -458,10 +459,27 @@ void group_collect_nitro(
     {
         // --- Build JSON array for collected column ---
         std::string json = "[";
+        std::size_t collected_count_for_last_comma = collected.size();
+        bool add_comma = true;
         for (size_t i = 0; i < collected.size(); ++i)
         {
-            json += "\"" + collected[i] + "\"";
-            if (i + 1 < collected.size()) json += ",";
+            if (marked_unique)
+            {
+                // check if already exists in previous items
+                bool exists = false;
+                for (size_t j = 0; j < i; ++j)
+                {
+                    if (collected[j] == collected[i])
+                    {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (exists) continue; // skip duplicate
+                else if (i > 0 && json.size() > 1) json += ",";\
+            }
+            else if (i > 0 && json.size() > 1) json += ",";
+            json += "\"" + collected[i] +  "\"";
         }
         json += "]";
         sheet.cols[output_col].vals[first_row] = json;

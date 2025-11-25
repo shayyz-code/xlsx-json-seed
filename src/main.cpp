@@ -246,10 +246,11 @@ int main(int argc, char **argv)
             auto group_by_column = op.node["group-by"].as<std::string>();
             auto collect_column = op.node["to-array-column"].as<std::string>();
             auto output_column = op.node["to-array-output-column"].as<std::string>();
+            auto marked_unique = op.node["mark-unique-items"].as<bool>(false);
             auto do_maths_column = op.node["do-maths-column"].as<std::string>();
             auto do_maths_operation = op.node["do-maths-operation"].as<std::string>();
 
-            group_collect_nitro(sheet, col_to_index(group_by_column), col_to_index(collect_column), col_to_index(output_column), col_to_index(do_maths_column), do_maths_operation);
+            group_collect_nitro(sheet, col_to_index(group_by_column), col_to_index(collect_column), col_to_index(output_column), marked_unique, col_to_index(do_maths_column), do_maths_operation);
 
             msg = fmt::format(
                 GREEN "✔ " RESET YELLOW "group-collect-to" RESET
@@ -306,7 +307,7 @@ int main(int argc, char **argv)
     auto end = std::chrono::high_resolution_clock::now(); // to measure operation time
     auto ms = std::chrono::duration<double, std::milli>(end - start).count();
 
-    std::cout << "\n# Computation time: " << ms << " ms\n" << std::flush;
+    std::cout << "\n# Computed " << total_ops << " operations in " << ms << " ms\n" << std::flush;
 
     // ======================================================
     //  PRINT ALL LOGS AFTER PROCESSING

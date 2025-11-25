@@ -42,6 +42,7 @@ operations:
   - type: group-collect
     group-by: F # column with BN (type column)
     to-array-column: G # colors
+    mark-unique-items: true # colors will not duplicate
     to-array-output-column: G # write array back to color column
     do-maths-column: E
     do-maths-operation: "sum"
