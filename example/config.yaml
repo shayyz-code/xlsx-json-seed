@@ -11,6 +11,7 @@ operations:
     delimiter: "-"
     split-to: [E, F]
     new-headers: ["Part1", "Part2"]
+    proper-positions: [1, 2]
 
   # - type: uppercase-column
   #   column: G

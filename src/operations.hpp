@@ -34,7 +34,8 @@ void split_column_nitro(
     const std::size_t source_col_index,          // 0-based column index to split
     const char delimiter,                              // delimiter character
     const std::vector<size_t> &target_col_indices,  // 0-based target column indices
-    const std::vector<std::string> &new_headers // optional headers for target columns
+    const std::vector<std::string> &new_headers, // optional headers for target columns
+    const std::vector<std::uint32_t> &proper_positions // optional proper positions for target columns
 );
 
 void uppercase_column_nitro(

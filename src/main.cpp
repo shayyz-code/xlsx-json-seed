@@ -128,6 +128,7 @@ int main(int argc, char **argv)
             auto delim = op.node["delimiter"].as<std::string>();
             auto targetNodes = op.node["split-to"];
             auto newHeaderNodes = op.node["new-headers"];
+            auto properPositionNodes = op.node["proper-positions"];
 
 
             std::vector<std::size_t> targets;
@@ -140,7 +141,12 @@ int main(int argc, char **argv)
             for (const auto &h : newHeaderNodes)
                 newHeaders.push_back(h.as<std::string>());
 
-            split_column_nitro(sheet, cfg.header_row, cfg.first_data_row, col_to_index(column), delim[0], targets, newHeaders);
+            std::vector<std::uint32_t> properPositions;
+
+            for (const auto &p : properPositionNodes)
+                properPositions.push_back(p.as<std::uint32_t>());
+
+            split_column_nitro(sheet, cfg.header_row, cfg.first_data_row, col_to_index(column), delim[0], targets, newHeaders, properPositions);
 
             msg = fmt::format(
                 GREEN "✔ " RESET YELLOW "split-column" RESET

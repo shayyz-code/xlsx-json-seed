@@ -109,6 +109,7 @@ operations:
     delimiter: "-"
     split-to: [E, F]
     new-headers: ["Part1", "Part2"]
+    proper-positions: [1, 2]
 
   # - type: uppercase-column
   #   column: G
@@ -221,7 +222,7 @@ VG and WHITE,3,V Shirt,60.0,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""202
 
 | **Operation Type**    | **Description**                                                                    | **Required Fields**                                                                                                   | **Optional Fields**                  |
 | --------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `split-column`        | Splits a column into multiple parts by a delimiter.                                | `column`, `delimiter`, `split-to`, `new-headers`                                                                      | —                                    |
+| `split-column`        | Splits a column into multiple parts by a delimiter.                                | `column`, `delimiter`, `split-to`, `new-headers`, `proper-positions`                                                  | —                                    |
 | `replace-in-column`   | Replaces occurrences of a substring within a column.                               | `column`, `find`, `replace`                                                                                           | —                                    |
 | `fill-column`         | Fills a column with a constant or dyanmic value and optionally renames the header. | `column`, `fill-with` <br />// Dynamic -> ${col F}                                                                    | `new-header`                         |
 | `add-column`          | Adds a column at the start, end, before, or after another column.                  | `at`, `fill-with`, `new-header`                                                                                       | —                                    |

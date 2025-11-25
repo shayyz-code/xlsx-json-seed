@@ -190,7 +190,8 @@ void split_column_nitro(
     const std::size_t col_index,                 // 0-based column index to split
     const char delimiter,                        // delimiter character
     const std::vector<size_t> &target_col_indices,  // 0-based target column indices
-    const std::vector<std::string> &new_headers = {} // optional headers for target columns
+    const std::vector<std::string> &new_headers = {}, // optional headers for target columns
+    const std::vector<std::uint32_t> &proper_positions = {} // optional proper positions for target columns
 )
 {
     // validate
@@ -244,6 +245,17 @@ void split_column_nitro(
             size_t tcol = target_col_indices[i];
             // bounds should be guaranteed above; but check defensively
             if (tcol >= sheet.cols.size()) continue;
+
+            // assign with proper position if provided
+            if (!proper_positions.empty() && target_col_indices.size() == proper_positions.size())
+            {
+                std::uint32_t proper_pos = proper_positions[i];
+                if (proper_pos > 0 && proper_pos - 1 < parts.size())
+                    sheet.cols[tcol].vals[r] = parts[proper_pos - 1];
+                else
+                    sheet.cols[tcol].vals[r] = std::string();
+            }
+            else
             sheet.cols[tcol].vals[r] = (i < parts.size()) ? parts[i] : std::string();
         }
     }
