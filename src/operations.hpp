@@ -70,11 +70,13 @@ void rename_header_nitro(
     const std::string new_name
 );
 
-void group_collect_to_array_nitro(
+void group_collect_nitro(
     NitroSheet &sheet,
     std::size_t group_col,
     std::size_t collect_col,
-    std::size_t output_col
+    std::size_t output_col,
+    std::size_t do_maths_col,
+    const std::string &do_maths_operation
 );
 
 void sort_rows_by_column_nitro(

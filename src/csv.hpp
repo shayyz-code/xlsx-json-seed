@@ -104,7 +104,8 @@ inline void save_csv_nitro(
 
         for (size_t c = 0; c < cols; ++c)
         {
-            buf += csv_escape(sheet.cols[c].vals[r]);
+            std::string cleaned = to_clean_number(sheet.cols[c].vals[r]);
+            buf += csv_escape(cleaned);
             if (c + 1 < cols) buf += ",";
         }
         buf += "\n";

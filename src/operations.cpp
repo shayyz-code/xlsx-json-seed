@@ -416,11 +416,13 @@ void rename_header_nitro(
     col.header = new_name;
 }
 
-void group_collect_to_array_nitro(
+void group_collect_nitro(
     NitroSheet &sheet,
     std::size_t group_col,
     std::size_t collect_col,
-    std::size_t output_col)
+    std::size_t output_col,
+    std::size_t do_maths_col,
+    const std::string &do_maths_operation)
 {
     if (sheet.cols.empty())
         return;
@@ -428,53 +430,16 @@ void group_collect_to_array_nitro(
     std::string current_key;
     std::vector<std::string> collected;
 
+    // temporary storage of numeric values for math ops
+    std::vector<double> math_values;
+
     std::vector<bool> keep_row(sheet.num_rows, true);
 
     std::size_t first_row_index = 0;
 
-    // Pass 1: collect values + mark duplicate rows for deletion
-    for (std::size_t r = 0; r < sheet.num_rows; ++r)
+    auto flush_group = [&](size_t first_row)
     {
-        const std::string &key = sheet.cols[group_col].vals[r];
-        const std::string &val = sheet.cols[collect_col].vals[r];
-
-        if (r == 0)
-        {
-            current_key = key;
-            if (!val.empty()) collected.push_back(val);
-            continue;
-        }
-
-        if (key != current_key)
-        {
-            // flush collected to the first row
-            std::string json = "[";
-            for (size_t i = 0; i < collected.size(); ++i)
-            {
-                json += "\"" + collected[i] + "\"";
-                if (i + 1 < collected.size()) json += ",";
-            }
-            json += "]";
-
-            sheet.cols[output_col].vals[first_row_index] = json;
-
-            // start new group
-            current_key = key;
-            collected.clear();
-            if (!val.empty()) collected.push_back(val);
-            first_row_index = r;
-        }
-        else
-        {
-            // same group → keep only first row
-            keep_row[r] = false;
-            if (!val.empty()) collected.push_back(val);
-        }
-    }
-
-    // Final flush
-    if (!collected.empty())
-    {
+        // --- Build JSON array for collected column ---
         std::string json = "[";
         for (size_t i = 0; i < collected.size(); ++i)
         {
@@ -482,9 +447,97 @@ void group_collect_to_array_nitro(
             if (i + 1 < collected.size()) json += ",";
         }
         json += "]";
+        sheet.cols[output_col].vals[first_row] = json;
 
-        sheet.cols[output_col].vals[first_row_index] = json;
+        // --- Perform Maths Operation ---
+        if (!do_maths_operation.empty() && !math_values.empty())
+        {
+            double result = 0.0;
+
+            if (do_maths_operation == "sum")
+            {
+                for (double v : math_values) result += v;
+            }
+            else if (do_maths_operation == "avg")
+            {
+                for (double v : math_values) result += v;
+                result /= math_values.size();
+            }
+            else if (do_maths_operation == "min")
+            {
+                result = *std::min_element(math_values.begin(), math_values.end());
+            }
+            else if (do_maths_operation == "max")
+            {
+                result = *std::max_element(math_values.begin(), math_values.end());
+            }
+            else if (do_maths_operation == "count")
+            {
+                result = static_cast<double>(math_values.size());
+            }
+            else
+            {
+                throw std::runtime_error("Unknown maths operation: " + do_maths_operation);
+            }
+
+            sheet.cols[do_maths_col].vals[first_row] = std::to_string(result);
+        }
+    };
+
+    // Pass 1: collect values + mark duplicate rows for deletion
+    for (std::size_t r = 0; r < sheet.num_rows; ++r)
+    {
+        const std::string &key = sheet.cols[group_col].vals[r];
+        const std::string &val = sheet.cols[collect_col].vals[r];
+        const std::string &math_val_str = sheet.cols[do_maths_col].vals[r];
+
+        if (r == 0)
+        {
+            current_key = key;
+            if (!val.empty()) collected.push_back(val);
+
+            if (!math_val_str.empty())
+            {
+                try {
+                    math_values.push_back(std::stod(math_val_str));
+                } catch (...) {}
+            }
+            continue;
+        }
+
+        if (key != current_key)
+        {
+            // flush previous group
+            flush_group(first_row_index);
+
+            // start new group
+            current_key = key;
+            collected.clear();
+            math_values.clear();
+
+            if (!val.empty()) collected.push_back(val);
+            if (!math_val_str.empty()) {
+                try { math_values.push_back(std::stod(math_val_str)); } catch (...) {}
+            }
+
+            first_row_index = r;
+        }
+        else
+        {
+            // same group → keep only first row
+            keep_row[r] = false;
+
+            if (!val.empty()) collected.push_back(val);
+            if (!math_val_str.empty())
+            {
+                try { math_values.push_back(std::stod(math_val_str)); } catch (...) {}
+            }
+        }
     }
+
+    // Final flush
+    if (!collected.empty())
+        flush_group(first_row_index);
 
     // Pass 2: Physically remove duplicate rows
     size_t write_index = 0;

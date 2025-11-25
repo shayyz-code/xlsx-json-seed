@@ -32,17 +32,19 @@ operations:
 
   - type: add-column
     at: "start"
-    fill-with: column[F] # fill with values from column F
+    fill-with: "column[F]" # fill with values from column F
     new-header: "Dynamic Value"
 
   - type: sort-rows-by-column
     column: F
     ascending: true
 
-  - type: group-collect-to-array
+  - type: group-collect
     group-by: F # column with BN (type column)
-    collect-column: G # colors
-    output-column: G # write array back to color column
+    to-array-column: G # colors
+    to-array-output-column: G # write array back to color column
+    do-maths-column: E
+    do-maths-operation: "sum"
 
   - type: reassign-numbering
     column: B

@@ -10,6 +10,8 @@ std::size_t col_to_index(const std::string &letters);
 
 std::string index_to_col(size_t index);
 
+std::string to_clean_number(const std::string &s);
+
 std::string to_upper(const std::string &str);
 
 std::string to_lower(const std::string &str);

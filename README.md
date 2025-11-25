@@ -10,7 +10,7 @@
 
 # XLSX JSON Seed
 
-A **Blazingly Fast, Nitro-Boosted** tool for processing and automating Excel (.xlsx) data for any databases (including Firestore) using a simple **YAML instruction file**.
+A **Blazingly Fast, Nitro-Boosted** tool for processing and automating Excel (.xlsx) data for database schema purposes (including Firestore) using a simple **YAML instruction file**.
 
 Can be used together with [**json-firestore-seed**](https://github.com/shayyz-code/json-firestore-seed) to process **firestore data entry**.
 
@@ -129,17 +129,19 @@ operations:
 
   - type: add-column
     at: "start"
-    fill-with: column[F] # fill with values from column F
+    fill-with: "column[F]" # fill with values from column F
     new-header: "Dynamic Value"
 
   - type: sort-rows-by-column
     column: F
     ascending: true
 
-  - type: group-collect-to-array
+  - type: group-collect
     group-by: F # column with BN (type column)
-    collect-column: G # colors
-    output-column: G # write array back to color column
+    to-array-column: G # colors
+    to-array-output-column: G # write array back to color column
+    do-maths-column: E
+    do-maths-operation: "sum"
 
   - type: reassign-numbering
     column: B
@@ -175,30 +177,30 @@ JSON:
     "new_prefix": "BN",
     "no": "1.",
     "product_name": "B Necklace",
-    "price": 1000,
+    "price": 2000.0,
     "part1": "BN",
     "part2": ["PURPLE", "RED"],
-    "created_at": { "__fire_ts_from_date__": "2023-12-21T12:58:37Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-12-02T13:49:21Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
     "new_prefix": "GH",
     "no": "2.",
     "product_name": "G Handbag",
-    "price": 200,
+    "price": 500.0,
     "part1": "GH",
     "part2": ["BLUE", "BROWN"],
-    "created_at": { "__fire_ts_from_date__": "2024-02-27T19:27:53Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-09-10T21:15:28Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
     "new_prefix": "VG",
     "no": "3.",
     "product_name": "V Shirt",
-    "price": 60,
+    "price": 60.0,
     "part1": "VG",
     "part2": ["WHITE"],
-    "created_at": { "__fire_ts_from_date__": "2024-01-29T10:42:42Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-05-04T01:16:19Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]
@@ -208,27 +210,27 @@ CSV:
 
 ```csv
 new_prefix,no,product_name,price,part1,part2,created_at,updated_at
-BN,1.,B Necklace,1000,BN,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2023-12-21T12:58:37Z"" }",__fire_ts_now__
-GH,2.,G Handbag,200,GH,"[""BLUE"",""BROWN""]","{ ""__fire_ts_from_date__"": ""2024-02-27T19:27:53Z"" }",__fire_ts_now__
-VG,3.,V Shirt,60,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2024-01-29T10:42:42Z"" }",__fire_ts_now__
+BN,1,B Necklace,2000.0,BN,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2024-12-02T13:49:21Z"" }",__fire_ts_now__
+GH,2,G Handbag,500.0,GH,"[""BLUE"",""BROWN""]","{ ""__fire_ts_from_date__"": ""2024-09-10T21:15:28Z"" }",__fire_ts_now__
+VG,3,V Shirt,60.0,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2024-05-04T01:16:19Z"" }",__fire_ts_now__
 ```
 
 ## Operations Reference Table
 
-| **Operation Type**       | **Description**                                                                    | **Required Fields**                                 | **Optional Fields**                  |
-| ------------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------ |
-| `split-column`           | Splits a column into multiple parts by a delimiter.                                | `column`, `delimiter`, `split-to`, `new-headers`    | —                                    |
-| `replace-in-column`      | Replaces occurrences of a substring within a column.                               | `column`, `find`, `replace`                         | —                                    |
-| `fill-column`            | Fills a column with a constant or dyanmic value and optionally renames the header. | `column`, `fill-with` <br />// Dynamic -> column[F] | `new-header`                         |
-| `add-column`             | Adds a column at the start, end, before, or after another column.                  | `at`, `fill-with`, `new-header`                     | —                                    |
-| `uppercase-column`       | Converts the entire column to uppercase.                                           | `column`                                            | —                                    |
-| `sort-rows-by-column`    | Sorts rows by a given column (ascending/descending).                               | `column`                                            | `ascending` (default `true`)         |
-| `group-collect-to-array` | Groups rows by one column and creates an array of values from another column.      | `group-by`, `collect-column`, `output-column`       | —                                    |
-| `reassign-numbering`     | Replaces a numeric column with a new sequence number format.                       | `column`, `prefix`, `suffix`                        | `start-from` (default 1), `step` (1) |
-| `remove-column`          | Deletes a column entirely.                                                         | `column`                                            | —                                    |
-| `rename-header`          | Renames a column header.                                                           | `column`, `new-name`                                | —                                    |
-| `transform-row`          | Transforms one row into another format (camelCase, snake_case, etc.).              | `row`, `to`                                         | `delimiter`                          |
-| `transform-header`       | Transforms all headers (camelCase, snake_case, etc.).                              | `to`                                                | `delimiter`                          |
+| **Operation Type**    | **Description**                                                                    | **Required Fields**                                                                              | **Optional Fields**                  |
+| --------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| `split-column`        | Splits a column into multiple parts by a delimiter.                                | `column`, `delimiter`, `split-to`, `new-headers`                                                 | —                                    |
+| `replace-in-column`   | Replaces occurrences of a substring within a column.                               | `column`, `find`, `replace`                                                                      | —                                    |
+| `fill-column`         | Fills a column with a constant or dyanmic value and optionally renames the header. | `column`, `fill-with` <br />// Dynamic -> column[F]                                              | `new-header`                         |
+| `add-column`          | Adds a column at the start, end, before, or after another column.                  | `at`, `fill-with`, `new-header`                                                                  | —                                    |
+| `uppercase-column`    | Converts the entire column to uppercase.                                           | `column`                                                                                         | —                                    |
+| `sort-rows-by-column` | Sorts rows by a given column (ascending/descending).                               | `column`                                                                                         | `ascending` (default `true`)         |
+| `group-collect`       | Groups rows as array and do math operations at the same time in a row.             | `group-by`, `to-array-column`, `to-array-output-column`, `do-maths-column`, `do-maths-operation` | —                                    |
+| `reassign-numbering`  | Replaces a numeric column with a new sequence number format.                       | `column`, `prefix`, `suffix`                                                                     | `start-from` (default 1), `step` (1) |
+| `remove-column`       | Deletes a column entirely.                                                         | `column`                                                                                         | —                                    |
+| `rename-header`       | Renames a column header.                                                           | `column`, `new-name`                                                                             | —                                    |
+| `transform-row`       | Transforms one row into another format (camelCase, snake_case, etc.).              | `row`, `to`                                                                                      | `delimiter`                          |
+| `transform-header`    | Transforms all headers (camelCase, snake_case, etc.).                              | `to`                                                                                             | `delimiter`                          |
 
 ## How to Contribute
 

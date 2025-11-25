@@ -3,6 +3,8 @@
 #include "utils.hpp"
 #include <iostream>
 #include <string>
+#define FMT_HEADER_ONLY
+#include "fmt/core.h"
 
 #define RESET   "\033[0m"
 
@@ -58,6 +60,26 @@ std::string index_to_col(size_t index)
     }
     return letters;
 }
+
+std::string to_clean_number(const std::string &s)
+{
+    // Fast check: must contain a dot
+    if (s.find('.') == std::string::npos)
+        return s;
+
+    std::string out = s;
+
+    // Strip trailing zeros
+    while (!out.empty() && out.back() == '0' && out[out.size() - 2] != '.')
+        out.pop_back();
+
+    // Strip trailing dot
+    if (!out.empty() && out.back() == '.')
+        out.pop_back();
+
+    return out;
+}
+
 
 std::string to_upper(const std::string &str)
 {

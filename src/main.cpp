@@ -241,16 +241,18 @@ int main(int argc, char **argv)
                 column, ascending ? "ascending" : "descending"
             );
         }
-        else if (op.type == "group-collect-to-array")
+        else if (op.type == "group-collect")
         {
             auto group_by_column = op.node["group-by"].as<std::string>();
-            auto collect_column = op.node["collect-column"].as<std::string>();
-            auto output_column = op.node["output-column"].as<std::string>();
+            auto collect_column = op.node["to-array-column"].as<std::string>();
+            auto output_column = op.node["to-array-output-column"].as<std::string>();
+            auto do_maths_column = op.node["do-maths-column"].as<std::string>();
+            auto do_maths_operation = op.node["do-maths-operation"].as<std::string>();
 
-            group_collect_to_array_nitro(sheet, col_to_index(group_by_column), col_to_index(collect_column), col_to_index(output_column));
+            group_collect_nitro(sheet, col_to_index(group_by_column), col_to_index(collect_column), col_to_index(output_column), col_to_index(do_maths_column), do_maths_operation);
 
             msg = fmt::format(
-                GREEN "✔ " RESET YELLOW "group-collect-to-array" RESET
+                GREEN "✔ " RESET YELLOW "group-collect-to" RESET
                 " (group=" CYAN "{}" RESET ", collect=" CYAN "{}" RESET ")",
                 group_by_column, collect_column
             );

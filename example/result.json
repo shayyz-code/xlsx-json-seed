@@ -3,30 +3,30 @@
     "new_prefix": "BN",
     "no": "1.",
     "product_name": "B Necklace",
-    "price": 1000,
+    "price": 2000.0,
     "part1": "BN",
     "part2": ["PURPLE","RED"],
-    "created_at": { "__fire_ts_from_date__": "2023-12-21T12:58:37Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-12-02T13:49:21Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
     "new_prefix": "GH",
     "no": "2.",
     "product_name": "G Handbag",
-    "price": 200,
+    "price": 500.0,
     "part1": "GH",
     "part2": ["BLUE","BROWN"],
-    "created_at": { "__fire_ts_from_date__": "2024-02-27T19:27:53Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-09-10T21:15:28Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
     "new_prefix": "VG",
     "no": "3.",
     "product_name": "V Shirt",
-    "price": 60,
+    "price": 60.0,
     "part1": "VG",
     "part2": ["WHITE"],
-    "created_at": { "__fire_ts_from_date__": "2024-01-29T10:42:42Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-05-04T01:16:19Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]

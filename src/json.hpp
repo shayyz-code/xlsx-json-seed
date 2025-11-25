@@ -84,6 +84,8 @@ inline void save_json_nitro(
     size_t flush_threshold = 1 << 20
 )
 {
+    // print_nitro_sheet(sheet); // uncomment this for debugging
+
     // Basic validation
     if (sheet.cols.empty())
         throw std::runtime_error("Cannot export JSON: sheet has no columns.");
@@ -169,7 +171,7 @@ inline void save_json_nitro(
                      || is_valid_number(trimmed)))
             {
                 // raw number, bool, or null
-                buf += trimmed;
+                buf += to_clean_number(trimmed);
             }
             else
             {
