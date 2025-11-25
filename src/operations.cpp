@@ -36,11 +36,11 @@ void fill_column_nitro(
 
     for (size_t r = 0; r < total_rows; ++r)
     {
-        if (fill_with == "firestore-now")
+        if (fill_with == "firestore-now") // now
         {
             col.vals[r] = "__fire_ts_now__";
         }
-        else if (fill_with.compare(0, prefix.size(), prefix) == 0)
+        else if (fill_with.compare(0, prefix.size(), prefix) == 0) // random past date
         {
             std::string years_part = fill_with.substr(prefix.size());
             std::optional<uint32_t> n_years;
@@ -54,6 +54,21 @@ void fill_column_nitro(
 
             std::string ts = random_past_utc_date_within_n_years(n_years);
             col.vals[r] = "{ \"__fire_ts_from_date__\": \"" + ts + "\" }";
+        }
+        else if (str_starts_with(fill_with, "column[") && fill_with.back() == ']')
+        {
+            // extract column 
+            std::string ref_col = fill_with.substr(7, fill_with.size() - 8);
+            size_t ref_col_index = col_to_index(ref_col);
+
+            if (ref_col_index < sheet.cols.size() && r < sheet.cols[ref_col_index].vals.size())
+            {
+                col.vals[r] = sheet.cols[ref_col_index].vals[r];
+            }
+            else
+            {
+                col.vals[r] = "";
+            }
         }
         else
         {

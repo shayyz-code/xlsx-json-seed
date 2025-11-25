@@ -32,8 +32,8 @@ operations:
 
   - type: add-column
     at: "start"
-    fill-with: "prefix"
-    new-header: "Prefix"
+    fill-with: column[F] # fill with values from column F
+    new-header: "Dynamic Value"
 
   - type: sort-rows-by-column
     column: F
