@@ -2,9 +2,13 @@
 #include <optional>
 
 // helpers
-std::string str_slice_from(const std::string &s, size_t start);
+std::string str_slice_from(const std::string &s, std::size_t start);
 
 bool str_starts_with(const std::string &s, const std::string &prefix);
+
+bool str_contains(const std::string &s, const std::string &subs);
+
+bool str_contains_at_least_one_placeholder(const std::string &s);
 
 std::size_t col_to_index(const std::string &letters);
 

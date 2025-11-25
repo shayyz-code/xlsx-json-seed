@@ -1,6 +1,7 @@
-#include "operations.hpp"
 #include <algorithm>
 #include <sstream>
+#include "operations.hpp"
+#include "utils/dynamic_placeholder.hpp"
 
 // ops
 
@@ -55,19 +56,35 @@ void fill_column_nitro(
             std::string ts = random_past_utc_date_within_n_years(n_years);
             col.vals[r] = "{ \"__fire_ts_from_date__\": \"" + ts + "\" }";
         }
-        else if (str_starts_with(fill_with, "column[") && fill_with.back() == ']')
+        else if (str_contains_at_least_one_placeholder(fill_with))
         {
-            // extract column 
-            std::string ref_col = fill_with.substr(7, fill_with.size() - 8);
-            size_t ref_col_index = col_to_index(ref_col);
+            auto placeholders = scan_placeholders(fill_with);
 
-            if (ref_col_index < sheet.cols.size() && r < sheet.cols[ref_col_index].vals.size())
+            // start with the base string
+            col.vals[r] = fill_with;
+
+            for (auto &p : placeholders)
             {
-                col.vals[r] = sheet.cols[ref_col_index].vals[r];
-            }
-            else
-            {
-                col.vals[r] = "";
+                std::string replacement;
+
+                // currently supports only col
+                if (p.key.rfind("col ", 0) == 0) // key starts with "col "
+                {
+                    std::string col_letters = p.key.substr(4);
+                    size_t ref_col_index = col_to_index(col_letters);
+
+                    if (ref_col_index < sheet.cols.size() && r < sheet.cols[ref_col_index].vals.size())
+                        replacement = sheet.cols[ref_col_index].vals[r];
+                }
+
+                std::string full = "${" + p.key + "}";
+
+                size_t pos = 0;
+                while ((pos = col.vals[r].find(full, pos)) != std::string::npos)
+                {
+                    col.vals[r].replace(pos, full.size(), replacement);
+                    pos += replacement.size();
+                }
             }
         }
         else

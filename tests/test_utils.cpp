@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
-#include "utils.hpp"
+#include "utils/utils.hpp"
 
 
 TEST_CASE("str_slice_from returns correct substring", "[str_slice_from]")

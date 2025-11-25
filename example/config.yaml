@@ -32,7 +32,7 @@ operations:
 
   - type: add-column
     at: "start"
-    fill-with: "column[F]" # fill with values from column F
+    fill-with: "${col F} and ${col G}" # fill with values from column F
     new-header: "Dynamic Value"
 
   - type: sort-rows-by-column
@@ -62,8 +62,8 @@ operations:
   #   delimiter: " "
 
   - type: rename-header
-    column: A
-    new-name: "New Prefix"
+    column: F
+    new-name: "Colors"
 
   - type: transform-header
     to: "snake_case"

@@ -17,7 +17,7 @@
 
 // helpers
 
-std::string str_slice_from(const std::string &s, size_t start)
+std::string str_slice_from(const std::string &s, std::size_t start)
 {
     if (start > s.size()) return "";   // avoid out-of-range
     return s.substr(start);
@@ -28,6 +28,19 @@ bool str_starts_with(const std::string &s, const std::string &prefix)
     if (s.size() < prefix.size()) return false;
     return std::equal(prefix.begin(), prefix.end(), s.begin());
 }
+
+bool str_contains(const std::string &s, const std::string &subs)
+{
+    if (s.size() < subs.size()) return false;
+    return s.find(subs) != std::string::npos;
+}
+
+bool str_contains_at_least_one_placeholder(const std::string &s) {
+    std::size_t start = s.find("${");
+    if (start == std::string::npos) return false;
+    return str_contains(str_slice_from(s, start + 2), "}");
+}
+
 
 // -----------------------------
 // Column name <-> index helpers

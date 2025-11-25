@@ -1,32 +1,32 @@
 [
   {
-    "new_prefix": "BN",
+    "dynamic_value": "BN and PURPLE",
     "no": "1.",
     "product_name": "B Necklace",
     "price": 2000.0,
     "part1": "BN",
-    "part2": ["PURPLE","RED"],
-    "created_at": { "__fire_ts_from_date__": "2024-12-02T13:49:21Z" },
+    "colors": ["PURPLE","RED"],
+    "created_at": { "__fire_ts_from_date__": "2024-02-21T01:31:14Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
-    "new_prefix": "GH",
+    "dynamic_value": "GH and BLUE",
     "no": "2.",
     "product_name": "G Handbag",
     "price": 500.0,
     "part1": "GH",
-    "part2": ["BLUE","BROWN"],
-    "created_at": { "__fire_ts_from_date__": "2024-09-10T21:15:28Z" },
+    "colors": ["BLUE","BROWN"],
+    "created_at": { "__fire_ts_from_date__": "2024-12-25T13:13:46Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
-    "new_prefix": "VG",
+    "dynamic_value": "VG and WHITE",
     "no": "3.",
     "product_name": "V Shirt",
     "price": 60.0,
     "part1": "VG",
-    "part2": ["WHITE"],
-    "created_at": { "__fire_ts_from_date__": "2024-05-04T01:16:19Z" },
+    "colors": ["WHITE"],
+    "created_at": { "__fire_ts_from_date__": "2024-12-04T15:30:28Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]

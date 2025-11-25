@@ -25,7 +25,8 @@ add_library(xlsx_json_seed_lib
     src/nitro_sheet.hpp
     src/config.cpp
     src/operations.cpp
-    src/utils.cpp
+    src/utils/utils.cpp
+    src/utils/dynamic_placeholder.cpp
     src/csv.hpp
     src/json.hpp
     src/progress.hpp

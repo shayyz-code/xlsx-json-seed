@@ -47,6 +47,7 @@ _OpenXLSX version used in this project is (aral-matrix) 14 July 2025._
 - Export to **JSON**, **CSV** or back to **XLSX**
 - Automate via **YAML scripting**
 - Add, remove, group-as-array, renumbering, fill, split, uppercase, replace, and more
+- Dynamic value support
 - Blazingly Fast native runtime
 - Easy to extend with new operations
 
@@ -129,7 +130,7 @@ operations:
 
   - type: add-column
     at: "start"
-    fill-with: "column[F]" # fill with values from column F
+    fill-with: "${col F} and ${col G}" # fill with values from column F
     new-header: "Dynamic Value"
 
   - type: sort-rows-by-column
@@ -159,8 +160,8 @@ operations:
   #   delimiter: " "
 
   - type: rename-header
-    column: A
-    new-name: "New Prefix"
+    column: F
+    new-name: "Colors"
 
   - type: transform-header
     to: "snake_case"
@@ -174,33 +175,33 @@ JSON:
 ```json
 [
   {
-    "new_prefix": "BN",
+    "dynamic_value": "BN and PURPLE",
     "no": "1.",
     "product_name": "B Necklace",
     "price": 2000.0,
     "part1": "BN",
-    "part2": ["PURPLE", "RED"],
-    "created_at": { "__fire_ts_from_date__": "2024-12-02T13:49:21Z" },
+    "colors": ["PURPLE", "RED"],
+    "created_at": { "__fire_ts_from_date__": "2024-02-21T01:31:14Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
-    "new_prefix": "GH",
+    "dynamic_value": "GH and BLUE",
     "no": "2.",
     "product_name": "G Handbag",
     "price": 500.0,
     "part1": "GH",
-    "part2": ["BLUE", "BROWN"],
-    "created_at": { "__fire_ts_from_date__": "2024-09-10T21:15:28Z" },
+    "colors": ["BLUE", "BROWN"],
+    "created_at": { "__fire_ts_from_date__": "2024-12-25T13:13:46Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
-    "new_prefix": "VG",
+    "dynamic_value": "VG and WHITE",
     "no": "3.",
     "product_name": "V Shirt",
     "price": 60.0,
     "part1": "VG",
-    "part2": ["WHITE"],
-    "created_at": { "__fire_ts_from_date__": "2024-05-04T01:16:19Z" },
+    "colors": ["WHITE"],
+    "created_at": { "__fire_ts_from_date__": "2024-12-04T15:30:28Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]
@@ -209,10 +210,10 @@ JSON:
 CSV:
 
 ```csv
-new_prefix,no,product_name,price,part1,part2,created_at,updated_at
-BN,1,B Necklace,2000.0,BN,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2024-12-02T13:49:21Z"" }",__fire_ts_now__
-GH,2,G Handbag,500.0,GH,"[""BLUE"",""BROWN""]","{ ""__fire_ts_from_date__"": ""2024-09-10T21:15:28Z"" }",__fire_ts_now__
-VG,3,V Shirt,60.0,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2024-05-04T01:16:19Z"" }",__fire_ts_now__
+dynamic_value,no,product_name,price,part1,colors,created_at,updated_at
+BN and PURPLE,1,B Necklace,2000.0,BN,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2024-02-21T01:31:14Z"" }",__fire_ts_now__
+GH and BLUE,2,G Handbag,500.0,GH,"[""BLUE"",""BROWN""]","{ ""__fire_ts_from_date__"": ""2024-12-25T13:13:46Z"" }",__fire_ts_now__
+VG and WHITE,3,V Shirt,60.0,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2024-12-04T15:30:28Z"" }",__fire_ts_now__
 ```
 
 ## Operations Reference Table
@@ -221,7 +222,7 @@ VG,3,V Shirt,60.0,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2024-05-04T01
 | --------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------ |
 | `split-column`        | Splits a column into multiple parts by a delimiter.                                | `column`, `delimiter`, `split-to`, `new-headers`                                                 | —                                    |
 | `replace-in-column`   | Replaces occurrences of a substring within a column.                               | `column`, `find`, `replace`                                                                      | —                                    |
-| `fill-column`         | Fills a column with a constant or dyanmic value and optionally renames the header. | `column`, `fill-with` <br />// Dynamic -> column[F]                                              | `new-header`                         |
+| `fill-column`         | Fills a column with a constant or dyanmic value and optionally renames the header. | `column`, `fill-with` <br />// Dynamic -> ${col F}                                               | `new-header`                         |
 | `add-column`          | Adds a column at the start, end, before, or after another column.                  | `at`, `fill-with`, `new-header`                                                                  | —                                    |
 | `uppercase-column`    | Converts the entire column to uppercase.                                           | `column`                                                                                         | —                                    |
 | `sort-rows-by-column` | Sorts rows by a given column (ascending/descending).                               | `column`                                                                                         | `ascending` (default `true`)         |
