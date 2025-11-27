@@ -17,6 +17,13 @@
 
 // helpers
 
+std::string str_trim_copy(const std::string &s) {
+    size_t b = 0, e = s.size();
+    while (b < e && std::isspace((unsigned char)s[b])) ++b;
+    while (e > b && std::isspace((unsigned char)s[e-1])) --e;
+    return s.substr(b, e - b);
+}
+
 std::string str_slice_from(const std::string &s, std::size_t start)
 {
     if (start > s.size()) return "";   // avoid out-of-range
@@ -112,12 +119,16 @@ std::string to_lower(const std::string &str)
 
 std::string to_camel(const std::string &str, char &delim)
 {
-    std::string r = to_lower(str);
+    std::string r = str;
     bool cap_next = false;
 
     for (size_t i = 0; i < r.size(); i++)
     {
-        if (r[i] == delim)
+        if (i == 0)
+        {
+            r[i] = std::tolower(r[i]);
+        }
+        else if (r[i] == delim)
         {
             cap_next = true;
         }

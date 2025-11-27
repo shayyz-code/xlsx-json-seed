@@ -6,7 +6,7 @@
     "price": 2000.0,
     "part1": "BN",
     "colors": ["PURPLE","RED"],
-    "created_at": { "__fire_ts_from_date__": "2023-12-18T02:38:57Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-05-13T22:46:28Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
@@ -16,7 +16,7 @@
     "price": 700.0,
     "part1": "GH",
     "colors": ["BLUE","BROWN"],
-    "created_at": { "__fire_ts_from_date__": "2025-02-16T05:01:23Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-01-08T14:40:50Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
@@ -26,7 +26,7 @@
     "price": 60.0,
     "part1": "VG",
     "colors": ["WHITE"],
-    "created_at": { "__fire_ts_from_date__": "2025-11-15T23:55:20Z" },
+    "created_at": { "__fire_ts_from_date__": "2024-06-19T23:52:04Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]

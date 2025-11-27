@@ -13,7 +13,6 @@ TEST_CASE("to_lower converts strings to lowercase", "[to_lower]")
 TEST_CASE("to_camel converts strings to camelCase", "[to_camel]")
 {
     char delims[] = {' ', '-', '_'};
-    std::cout << "Hello" + std::to_string(' ') + "World";
     for (auto delim : delims)
     {
         std::string delim_str { delim };
@@ -21,8 +20,10 @@ TEST_CASE("to_camel converts strings to camelCase", "[to_camel]")
         REQUIRE(to_camel("Hello" + delim_str + "World", delim) == "helloWorld");
         REQUIRE(to_camel("testing" + delim_str + "Testing", delim) == "testingTesting");
         REQUIRE(to_camel("test" + delim_str + "case", delim) == "testCase");
+        REQUIRE(to_camel("Image" + delim_str + "URL", delim) == "imageURL");
     }
 }
+
 
 TEST_CASE("to_pascal converts strings to PascalCase", "[to_pascal]")
 {

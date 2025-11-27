@@ -2,6 +2,8 @@
 #include <optional>
 
 // helpers
+std::string str_trim_copy(const std::string &s);
+
 std::string str_slice_from(const std::string &s, std::size_t start);
 
 bool str_starts_with(const std::string &s, const std::string &prefix);

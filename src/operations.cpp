@@ -294,6 +294,18 @@ void uppercase_column_nitro(
     }
 }
 
+// helper trim function
+static inline void trim_inplace(std::string &s)
+{
+    auto not_space = [](unsigned char c){ return !std::isspace(c); };
+
+    // trim left
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), not_space));
+
+    // trim right
+    s.erase(std::find_if(s.rbegin(), s.rend(), not_space).base(), s.end());
+}
+
 // ----------------------
 // Replace substring in a NitroSheet column
 // ----------------------
@@ -316,6 +328,10 @@ void replace_in_column_nitro(
     for (size_t r = data_start; r < total_rows; ++r)
     {
         std::string &val = col.vals[r];
+        if (val.empty()) continue;
+
+        // 🧹 trim before replace
+        trim_inplace(val);
         if (val.empty()) continue;
 
         size_t pos = 0;
