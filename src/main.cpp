@@ -30,9 +30,9 @@ int main(int argc, char **argv)
 {
     CLI::App app { BOLD CYAN "XLSX JSON Seed - A tool to process XLSX files using YAML scripts, primarily for Firestore and other databases seeding" RESET };
 
-    std::string config_path;
+    std::string script_path;
 
-    app.add_option("-c, --config", config_path, "Path to YAML config")
+    app.add_option("-s, --script", script_path, "Path to YAML script")
         ->required()
         ->check(CLI::ExistingFile);
 
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     std::cout << BOLD           "by " RESET;
     std::cout << BOLD PURPLE    "shayyz-code\n\n" RESET << std::flush;
 
-    Config cfg = load_config(config_path);
+    Config cfg = load_script(script_path);
 
     std::cout << BOLD WHITE "- Input File: " RESET << GREEN << cfg.input_file << RESET << "\n";
     std::cout << BOLD WHITE "- Output File: " RESET << GREEN << cfg.output_file << RESET << "\n";

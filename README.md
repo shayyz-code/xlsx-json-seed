@@ -88,12 +88,18 @@ build/xlsx_json_seed
 ## Usage
 
 ```
-./build/xlsx_json_seed --config config.yaml
+./build/xlsx_json_seed --script script.yaml
+```
+
+or
+
+```
+./build/xlsx_json_seed --s script.yaml
 ```
 
 ## Example
 
-_config.yaml_ and _input.xlsx_ can be found in [./example](./example).
+_script.yaml_ and _input.xlsx_ can be found in [./example](./example).
 
 ```yaml
 input: "example/input.xlsx"
@@ -107,20 +113,20 @@ operations:
   - type: split-column
     column: B
     delimiter: "-"
-    split-to: [E, F]
-    new-headers: ["Part1", "Part2"]
-    proper-positions: [1, 2]
+    split-to: [E, F, G]
+    new-headers: ["Code", "Size", "Color"]
+    proper-positions: [1, 2, 3]
 
   # - type: uppercase-column
   #   column: G
 
-  - type: replace-in-column
-    column: C
-    find: "-"
-    replace: ","
+  # - type: replace-in-column
+  #   column: C
+  #   find: "-"
+  #   replace: ","
 
   - type: fill-column
-    column: G
+    column: H
     fill-with: "firestore-random-past-date-n-year-2"
     new-header: "Created At"
 
@@ -131,7 +137,7 @@ operations:
 
   - type: add-column
     at: "start"
-    fill-with: "${col F} and ${col G}" # fill with values from column F
+    fill-with: "${ifcol F == GH ? 'gh and' : } ${col H}" # fill with values from column F
     new-header: "Dynamic Value"
 
   - type: sort-rows-by-column
@@ -140,9 +146,9 @@ operations:
 
   - type: group-collect
     group-by: F # column with BN (type column)
-    to-array-column: G # colors
-    to-array-output-column: G # write array back to color column
+    to-array-column: H # colors
     mark-unique-items: true # colors will not duplicate
+    to-array-output-column: H # write array back to color column
     do-maths-column: E
     do-maths-operation: "sum"
 
@@ -162,7 +168,7 @@ operations:
   #   delimiter: " "
 
   - type: rename-header
-    column: F
+    column: G
     new-name: "Colors"
 
   - type: transform-header
@@ -177,33 +183,36 @@ JSON:
 ```json
 [
   {
-    "dynamic_value": "BN and PURPLE",
+    "dynamic_value": " PURPLE",
     "no": "1.",
     "product_name": "B Necklace",
     "price": 2000.0,
-    "part1": "BN",
+    "code": "BN",
+    "size": "XS",
     "colors": ["PURPLE", "RED"],
-    "created_at": { "__fire_ts_from_date__": "2024-10-21T13:34:26Z" },
+    "created_at": { "__fire_ts_from_date__": "2025-06-05T13:26:20Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
-    "dynamic_value": "GH and BLUE",
+    "dynamic_value": "gh and BLUE",
     "no": "2.",
     "product_name": "G Handbag",
     "price": 700.0,
-    "part1": "GH",
-    "colors": ["BLUE", "BROWN"],
-    "created_at": { "__fire_ts_from_date__": "2025-07-20T10:47:30Z" },
+    "code": "GH",
+    "size": "",
+    "colors": ["BLUE", "BROWN", "RED"],
+    "created_at": { "__fire_ts_from_date__": "2025-06-18T20:16:22Z" },
     "updated_at": "__fire_ts_now__"
   },
   {
-    "dynamic_value": "VG and WHITE",
+    "dynamic_value": " WHITE",
     "no": "3.",
     "product_name": "V Shirt",
     "price": 60.0,
-    "part1": "VG",
+    "code": "VG",
+    "size": "XS",
     "colors": ["WHITE"],
-    "created_at": { "__fire_ts_from_date__": "2024-03-10T17:45:46Z" },
+    "created_at": { "__fire_ts_from_date__": "2025-04-12T18:06:15Z" },
     "updated_at": "__fire_ts_now__"
   }
 ]
@@ -212,10 +221,10 @@ JSON:
 CSV:
 
 ```csv
-dynamic_value,no,product_name,price,part1,colors,created_at,updated_at
-BN and PURPLE,1,B Necklace,2000.0,BN,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2024-10-21T13:34:26Z"" }",__fire_ts_now__
-GH and BLUE,2,G Handbag,700.0,GH,"[""BLUE"",""BROWN""]","{ ""__fire_ts_from_date__"": ""2025-07-20T10:47:30Z"" }",__fire_ts_now__
-VG and WHITE,3,V Shirt,60.0,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2024-03-10T17:45:46Z"" }",__fire_ts_now__
+dynamic_value,no,product_name,price,code,size,colors,created_at,updated_at
+ PURPLE,1,B Necklace,2000.0,BN,XS,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2025-06-05T13:26:20Z"" }",__fire_ts_now__
+gh and BLUE,2,G Handbag,700.0,GH,,"[""BLUE"",""BROWN"",""RED""]","{ ""__fire_ts_from_date__"": ""2025-06-18T20:16:22Z"" }",__fire_ts_now__
+ WHITE,3,V Shirt,60.0,VG,XS,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2025-04-12T18:06:15Z"" }",__fire_ts_now__
 ```
 
 ## Operations Reference Table
@@ -240,11 +249,11 @@ VG and WHITE,3,V Shirt,60.0,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""202
 Pull requests and feature suggestions are welcome!
 Feel free to open an issue to discuss ideas.
 
-## Contributors
+<!-- ## Contributors
 
 Thanks goes to these wonderful people ✨
 
-![Contributors](https://contrib.rocks/image?repo=shayyz-code/xlsx-json-seed)
+![Contributors](https://contrib.rocks/image?repo=shayyz-code/xlsx-json-seed) -->
 
 ## License
 

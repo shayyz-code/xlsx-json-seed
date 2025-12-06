@@ -67,18 +67,107 @@ void fill_column_nitro(
             {
                 std::string replacement;
 
-                // currently supports only col
                 if (p.key.rfind("col ", 0) == 0) // key starts with "col "
                 {
+                    // simple column reference
                     std::string col_letters = p.key.substr(4);
                     size_t ref_col_index = col_to_index(col_letters);
 
                     if (ref_col_index < sheet.cols.size() && r < sheet.cols[ref_col_index].vals.size())
                         replacement = sheet.cols[ref_col_index].vals[r];
                 }
+                else if (p.key.rfind("ifcol ", 0) == 0)
+                {
+                    std::string expr = p.key.substr(6); // remove "ifcol "
 
+                    auto trim = [](std::string s) -> std::string {
+                        size_t start = s.find_first_not_of(" \t");
+                        size_t end = s.find_last_not_of(" \t");
+                        if (start == std::string::npos) return "";
+                        return s.substr(start, end - start + 1);
+                    };
+
+                    auto extract_quoted = [&](const std::string &s) -> std::string {
+                        std::string t = trim(s);
+                        if ((t.front() == '\'' && t.back() == '\'') || (t.front() == '"' && t.back() == '"'))
+                            return t.substr(1, t.size() - 2);
+                        return t;
+                    };
+
+                    // find ? and :
+                    size_t qmark_pos = expr.find("?");
+                    size_t colon_pos = expr.find(":");
+                    if (qmark_pos == std::string::npos || colon_pos == std::string::npos) continue;
+
+                    std::string cond_part = trim(expr.substr(0, qmark_pos));
+                    std::string true_result  = extract_quoted(expr.substr(qmark_pos + 1, colon_pos - (qmark_pos + 1)));
+                    std::string false_result = extract_quoted(expr.substr(colon_pos + 1));
+
+                    // parse condition: <col_letters> <op> <value>
+                    std::string col_letters, op, value;
+                    {
+                        std::istringstream iss(cond_part);
+                        if (!(iss >> col_letters >> op)) continue;
+                        std::getline(iss, value);
+                        value = trim(value);
+                        value = extract_quoted(value);
+                    }
+
+                    size_t ref_col_index = col_to_index(col_letters);
+                    if (ref_col_index >= sheet.cols.size() || r >= sheet.cols[ref_col_index].vals.size()) continue;
+                    const std::string &cell_val = sheet.cols[ref_col_index].vals[r];
+
+                    // comparison
+                    bool condition = false;
+
+                    auto is_number = [](const std::string &s) -> bool {
+                        if (s.empty()) return false;
+                        char* endptr = nullptr;
+                        strtod(s.c_str(), &endptr);
+                        return (*endptr == 0);
+                    };
+
+                    // numeric comparison if both sides are numbers
+                    if (is_number(cell_val) && is_number(value))
+                    {
+                        double lhs = std::stod(cell_val);
+                        double rhs = std::stod(value);
+
+                        if (op == "==") condition = lhs == rhs;
+                        else if (op == "!=") condition = lhs != rhs;
+                        else if (op == ">")  condition = lhs > rhs;
+                        else if (op == "<")  condition = lhs < rhs;
+                        else if (op == ">=") condition = lhs >= rhs;
+                        else if (op == "<=") condition = lhs <= rhs;
+                    }
+                    else
+                    {
+                        // string comparison only supports == and !=
+                        if (op == "==") condition = cell_val == value;
+                        else if (op == "!=") condition = cell_val != value;
+                    }
+
+                    // resolve true_result / false_result if they reference columns
+                    auto resolve_result = [&](const std::string &res) -> std::string {
+                        std::string s = trim(res);
+                        if (s.rfind("col ", 0) == 0)
+                        {
+                            size_t tcol_index = col_to_index(s.substr(4));
+                            if (tcol_index < sheet.cols.size() && r < sheet.cols[tcol_index].vals.size())
+                                return sheet.cols[tcol_index].vals[r];
+                            else
+                                return "";
+                        }
+                        return s;
+                    };
+
+                    replacement = condition ? resolve_result(true_result) : resolve_result(false_result);
+                }
+
+
+
+                // replace placeholder in current cell
                 std::string full = "${" + p.key + "}";
-
                 size_t pos = 0;
                 while ((pos = col.vals[r].find(full, pos)) != std::string::npos)
                 {
@@ -86,6 +175,7 @@ void fill_column_nitro(
                     pos += replacement.size();
                 }
             }
+
         }
         else
         {
@@ -183,94 +273,95 @@ void split_simple(const std::string &s, char delim, std::vector<std::string> &ou
 }
 
 // Robust Nitro splitter
+// Universal Nitro splitter with per-row normalization
 void split_column_nitro(
     NitroSheet &sheet,
-    const std::uint32_t /*header_row*/,          // kept for API symmetry (not used)
-    const std::uint32_t /*first_data_row*/,      // kept for API symmetry (not used)
-    const std::size_t col_index,                 // 0-based column index to split
-    const char delimiter,                        // delimiter character
-    const std::vector<size_t> &target_col_indices,  // 0-based target column indices
-    const std::vector<std::string> &new_headers = {}, // optional headers for target columns
-    const std::vector<std::uint32_t> &proper_positions = {} // optional proper positions for target columns
+    const std::uint32_t /*header_row*/,
+    const std::uint32_t /*first_data_row*/,
+    const std::size_t col_index,
+    const char delimiter,
+    const std::vector<size_t> &target_col_indices,
+    const std::vector<std::string> &new_headers = {},
+    const std::vector<std::uint32_t> &proper_positions = {}
 )
 {
-    // validate
-    if (sheet.num_rows == 0) return;
-    if (col_index >= sheet.cols.size()) return;
+    if (sheet.num_rows == 0 || col_index >= sheet.cols.size()) return;
 
-    // ensure all target columns exist and have correct vals size
+    // ensure all target columns exist
     size_t max_target = col_index;
-    for (size_t idx : target_col_indices) if (idx > max_target) max_target = idx;
-
+    for (size_t idx : target_col_indices)
+        if (idx > max_target) max_target = idx;
     if (max_target >= sheet.cols.size()) sheet.cols.resize(max_target + 1);
-
     for (size_t t = 0; t <= max_target; ++t)
-    {
         if (sheet.cols[t].vals.size() < sheet.num_rows)
             sheet.cols[t].vals.resize(sheet.num_rows);
-    }
 
     Column &src = sheet.cols[col_index];
-
-    // safety: make sure source vals vector has expected length
     if (src.vals.size() < sheet.num_rows)
         src.vals.resize(sheet.num_rows);
 
     std::vector<std::string> parts;
-    parts.reserve(4);
+    parts.reserve(8);
 
-    // iterate over data rows (Nitro convention: vals[0] == first data row)
+    const size_t T = target_col_indices.size();
+
     for (size_t r = 0; r < sheet.num_rows; ++r)
     {
-        const std::string &value = src.vals[r];
+        const std::string &cell_value = src.vals[r];
 
-        // fast skip if empty
-        if (value.empty())
+        if (cell_value.empty())
         {
-            // assign empty string to targets (consistent)
-            for (size_t i = 0; i < target_col_indices.size(); ++i)
-            {
-                size_t tcol = target_col_indices[i];
+            for (size_t tcol : target_col_indices)
                 sheet.cols[tcol].vals[r] = "";
-            }
             continue;
         }
 
-        // split
-        split_simple(value, delimiter, parts);
+        // split the value
+        split_simple(cell_value, delimiter, parts);
+        size_t N = parts.size();
 
-        // write into targets
-        for (size_t i = 0; i < target_col_indices.size(); ++i)
+        // ---- universal per-row normalization ----
+        std::vector<std::string> normalized(T, "");
+
+        if (N >= 1) normalized[0] = parts[0];             // first column = first part
+        if (N >= 2) normalized[T-1] = parts[N-1];         // last column = last part
+
+        // fill middle columns (1..T-2)
+        for (size_t i = 1; i < T-1; ++i)
         {
-            size_t tcol = target_col_indices[i];
-            // bounds should be guaranteed above; but check defensively
-            if (tcol >= sheet.cols.size()) continue;
-
-            // assign with proper position if provided
-            if (!proper_positions.empty() && target_col_indices.size() == proper_positions.size())
-            {
-                std::uint32_t proper_pos = proper_positions[i];
-                if (proper_pos > 0 && proper_pos - 1 < parts.size())
-                    sheet.cols[tcol].vals[r] = parts[proper_pos - 1];
-                else
-                    sheet.cols[tcol].vals[r] = std::string();
-            }
+            if (i < N-1)
+                normalized[i] = parts[i];
             else
-            sheet.cols[tcol].vals[r] = (i < parts.size()) ? parts[i] : std::string();
+                normalized[i] = ""; // pad missing middle parts
+        }
+        // ----------------------------------------
+
+        // assign values to target columns using proper_positions if provided
+        for (size_t i = 0; i < T; ++i)
+        {
+            size_t pos = (!proper_positions.empty()) ? proper_positions[i] : (i + 1);
+
+            std::string out_value = "";
+
+            if (pos > 0 && pos <= normalized.size())
+                out_value = normalized[pos - 1];
+
+            sheet.cols[target_col_indices[i]].vals[r] = out_value;
         }
     }
 
-    // set headers for targets if provided (write to Column::header)
+    // set headers if provided
     if (!new_headers.empty())
     {
-        for (size_t i = 0; i < target_col_indices.size(); ++i)
+        for (size_t i = 0; i < T; ++i)
         {
             size_t tcol = target_col_indices[i];
             if (tcol >= sheet.cols.size()) continue;
-            sheet.cols[tcol].header = (i < new_headers.size()) ? new_headers[i] : std::string();
+            sheet.cols[tcol].header = (i < new_headers.size()) ? new_headers[i] : "";
         }
     }
 }
+
 
 void uppercase_column_nitro(
     NitroSheet &sheet,
@@ -507,7 +598,15 @@ void group_collect_nitro(
                 else if (i > 0 && json.size() > 1) json += ",";\
             }
             else if (i > 0 && json.size() > 1) json += ",";
-            json += "\"" + collected[i] +  "\"";
+
+            if (collected[i].find('{') != std::string::npos ||
+                collected[i].find('[') != std::string::npos)
+            {
+                // assume already JSON formatted
+                json += collected[i];
+            }
+            else
+                json += "\"" + collected[i] +  "\"";
         }
         json += "]";
         sheet.cols[output_col].vals[first_row] = json;

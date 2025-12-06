@@ -20,4 +20,4 @@ struct Config
     std::vector<Operation> operations;
 };
 
-Config load_config(const std::string &path);
+Config load_script(const std::string &path);

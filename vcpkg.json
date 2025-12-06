@@ -1,5 +1,5 @@
 {
   "name": "xlsx-json-seed",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "dependencies": ["openxlsx", "yaml-cpp", "fmt", "cli11", "catch2"]
 }

@@ -1,4 +1,4 @@
-dynamic_value,no,product_name,price,part1,colors,created_at,updated_at
-BN and PURPLE,1,B Necklace,2000.0,BN,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2024-05-13T22:46:28Z"" }",__fire_ts_now__
-GH and BLUE,2,G Handbag,700.0,GH,"[""BLUE"",""BROWN""]","{ ""__fire_ts_from_date__"": ""2024-01-08T14:40:50Z"" }",__fire_ts_now__
-VG and WHITE,3,V Shirt,60.0,VG,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2024-06-19T23:52:04Z"" }",__fire_ts_now__
+dynamic_value,no,product_name,price,code,size,colors,created_at,updated_at
+ PURPLE,1,B Necklace,2000.0,BN,XS,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2024-02-18T04:55:37Z"" }",__fire_ts_now__
+gh and BLUE,2,G Handbag,700.0,GH,,"[""BLUE"",""BROWN"",""RED""]","{ ""__fire_ts_from_date__"": ""2024-01-11T09:19:16Z"" }",__fire_ts_now__
+ WHITE,3,V Shirt,60.0,VG,XS,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2025-05-02T06:01:21Z"" }",__fire_ts_now__

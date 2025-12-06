@@ -9,20 +9,20 @@ operations:
   - type: split-column
     column: B
     delimiter: "-"
-    split-to: [E, F]
-    new-headers: ["Part1", "Part2"]
-    proper-positions: [1, 2]
+    split-to: [E, F, G]
+    new-headers: ["Code", "Size", "Color"]
+    proper-positions: [1, 2, 3]
 
   # - type: uppercase-column
   #   column: G
 
-  - type: replace-in-column
-    column: C
-    find: "-"
-    replace: ","
+  # - type: replace-in-column
+  #   column: C
+  #   find: "-"
+  #   replace: ","
 
   - type: fill-column
-    column: G
+    column: H
     fill-with: "firestore-random-past-date-n-year-2"
     new-header: "Created At"
 
@@ -33,7 +33,7 @@ operations:
 
   - type: add-column
     at: "start"
-    fill-with: "${col F} and ${col G}" # fill with values from column F
+    fill-with: "${ifcol F == GH ? 'gh and' : } ${col H}" # fill with values from column F
     new-header: "Dynamic Value"
 
   - type: sort-rows-by-column
@@ -42,9 +42,9 @@ operations:
 
   - type: group-collect
     group-by: F # column with BN (type column)
-    to-array-column: G # colors
+    to-array-column: H # colors
     mark-unique-items: true # colors will not duplicate
-    to-array-output-column: G # write array back to color column
+    to-array-output-column: H # write array back to color column
     do-maths-column: E
     do-maths-operation: "sum"
 
@@ -64,7 +64,7 @@ operations:
   #   delimiter: " "
 
   - type: rename-header
-    column: F
+    column: G
     new-name: "Colors"
 
   - type: transform-header
