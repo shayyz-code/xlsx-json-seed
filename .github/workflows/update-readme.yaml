@@ -6,6 +6,9 @@ on:
             - "example/*.{json,yaml,csv}"
     workflow_dispatch:
 
+permissions:
+    contents: write # Needed for pushing README updates
+
 jobs:
     update-readme:
         runs-on: ubuntu-latest
@@ -13,11 +16,13 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Install dependencies
               run: |
                   sudo apt-get update
-                  sudo apt-get install -y jq python3-pip
+                  sudo apt-get install -y python3-pip
                   pip install pyyaml pandas tabulate
 
             - name: Update README code blocks
