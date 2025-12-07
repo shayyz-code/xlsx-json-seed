@@ -102,78 +102,99 @@ or
 _script.yaml_ and _input.xlsx_ can be found in [./example](./example).
 
 ```yaml
-input: "example/input.xlsx"
-output: "example/result"
-header-row: 1
-first-data-row: 2
-
-export-csv: true
-
-operations:
-  - type: split-column
-    column: B
-    delimiter: "-"
-    split-to: [E, F, G]
-    new-headers: ["Code", "Size", "Color"]
-    proper-positions: [1, 2, 3]
-
-  # - type: uppercase-column
-  #   column: G
-
-  # - type: replace-in-column
-  #   column: C
-  #   find: "-"
-  #   replace: ","
-
-  - type: fill-column
-    column: H
-    fill-with: "firestore-random-past-date-n-year-2"
-    new-header: "Created At"
-
-  - type: add-column
-    at: "end"
-    fill-with: "firestore-now"
-    new-header: "Updated At"
-
-  - type: add-column
-    at: "start"
-    fill-with: "${ifcol F == GH ? 'gh and' : } ${col H}" # fill with values from column F
-    new-header: "Dynamic Value"
-
-  - type: sort-rows-by-column
-    column: F
-    ascending: true
-
-  - type: group-collect
-    group-by: F # column with BN (type column)
-    to-array-column: H # colors
-    mark-unique-items: true # colors will not duplicate
-    to-array-output-column: H # write array back to color column
-    do-maths-column: E
-    do-maths-operation: "sum"
-
-  - type: reassign-numbering
-    column: B
-    prefix: ""
-    suffix: "."
-    start-from: 1
-    step: 1
-
-  - type: remove-column
-    column: C
-
-  # - type: transform-row
-  #   row: 1
-  #   to: "camelCase"
-  #   delimiter: " "
-
-  - type: rename-header
-    column: G
-    new-name: "Colors"
-
-  - type: transform-header
-    to: "snake_case"
-    delimiter: " "
+{
+  "input": "example/input.xlsx",
+  "output": "example/result",
+  "header-row": 1,
+  "first-data-row": 2,
+  "export-csv": true,
+  "operations": [
+    {
+      "type": "split-column",
+      "column": "B",
+      "delimiter": "-",
+      "split-to": [
+        "E",
+        "F",
+        "G"
+      ],
+      "new-headers": [
+        "Code",
+        "Size",
+        "Color"
+      ],
+      "proper-positions": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "type": "fill-column",
+      "column": "H",
+      "fill-with": "firestore-random-past-date-n-year-2",
+      "new-header": "Created At"
+    },
+    {
+      "type": "add-column",
+      "at": "end",
+      "fill-with": "firestore-now",
+      "new-header": "Updated At"
+    },
+    {
+      "type": "add-column",
+      "at": "start",
+      "fill-with": "${ifcol F == GH ? 'gh and' : } ${col H}",
+      "new-header": "Dynamic Value"
+    },
+    {
+      "type": "sort-rows-by-column",
+      "column": "F",
+      "ascending": true
+    },
+    {
+      "type": "group-collect",
+      "group-by": "F",
+      "to-array-columns": [
+        "H",
+        "G"
+      ],
+      "mark-unique-items": true,
+      "to-array-output-columns": [
+        "H",
+        "G"
+      ],
+      "do-maths-columns": [
+        "E"
+      ],
+      "do-maths-operations": [
+        "sum"
+      ]
+    },
+    {
+      "type": "reassign-numbering",
+      "column": "B",
+      "prefix": "",
+      "suffix": ".",
+      "start-from": 1,
+      "step": 1
+    },
+    {
+      "type": "remove-column",
+      "column": "C"
+    },
+    {
+      "type": "rename-header",
+      "column": "G",
+      "new-name": "Colors"
+    },
+    {
+      "type": "transform-header",
+      "to": "snake_case",
+      "delimiter": " "
+    }
+  ]
+}
 ```
 
 ## Result
@@ -188,9 +209,17 @@ JSON:
     "product_name": "B Necklace",
     "price": 2000.0,
     "code": "BN",
-    "size": "XS",
-    "colors": ["PURPLE", "RED"],
-    "created_at": { "__fire_ts_from_date__": "2025-06-05T13:26:20Z" },
+    "size": [
+      "XS",
+      "S"
+    ],
+    "colors": [
+      "PURPLE",
+      "RED"
+    ],
+    "created_at": {
+      "__fire_ts_from_date__": "2025-01-02T21:10:29Z"
+    },
     "updated_at": "__fire_ts_now__"
   },
   {
@@ -199,9 +228,15 @@ JSON:
     "product_name": "G Handbag",
     "price": 700.0,
     "code": "GH",
-    "size": "",
-    "colors": ["BLUE", "BROWN", "RED"],
-    "created_at": { "__fire_ts_from_date__": "2025-06-18T20:16:22Z" },
+    "size": [],
+    "colors": [
+      "BLUE",
+      "BROWN",
+      "RED"
+    ],
+    "created_at": {
+      "__fire_ts_from_date__": "2024-09-01T11:34:29Z"
+    },
     "updated_at": "__fire_ts_now__"
   },
   {
@@ -210,9 +245,15 @@ JSON:
     "product_name": "V Shirt",
     "price": 60.0,
     "code": "VG",
-    "size": "XS",
-    "colors": ["WHITE"],
-    "created_at": { "__fire_ts_from_date__": "2025-04-12T18:06:15Z" },
+    "size": [
+      "XS"
+    ],
+    "colors": [
+      "WHITE"
+    ],
+    "created_at": {
+      "__fire_ts_from_date__": "2024-11-13T12:00:28Z"
+    },
     "updated_at": "__fire_ts_now__"
   }
 ]
@@ -221,10 +262,11 @@ JSON:
 CSV:
 
 ```csv
-dynamic_value,no,product_name,price,code,size,colors,created_at,updated_at
- PURPLE,1,B Necklace,2000.0,BN,XS,"[""PURPLE"",""RED""]","{ ""__fire_ts_from_date__"": ""2025-06-05T13:26:20Z"" }",__fire_ts_now__
-gh and BLUE,2,G Handbag,700.0,GH,,"[""BLUE"",""BROWN"",""RED""]","{ ""__fire_ts_from_date__"": ""2025-06-18T20:16:22Z"" }",__fire_ts_now__
- WHITE,3,V Shirt,60.0,VG,XS,"[""WHITE""]","{ ""__fire_ts_from_date__"": ""2025-04-12T18:06:15Z"" }",__fire_ts_now__
+| dynamic_value   |   no | product_name   |   price | code   | size       | colors                 | created_at                                          | updated_at      |
+|:----------------|-----:|:---------------|--------:|:-------|:-----------|:-----------------------|:----------------------------------------------------|:----------------|
+| PURPLE          |    1 | B Necklace     |    2000 | BN     | ["XS","S"] | ["PURPLE","RED"]       | { "__fire_ts_from_date__": "2025-01-02T21:10:29Z" } | __fire_ts_now__ |
+| gh and BLUE     |    2 | G Handbag      |     700 | GH     | []         | ["BLUE","BROWN","RED"] | { "__fire_ts_from_date__": "2024-09-01T11:34:29Z" } | __fire_ts_now__ |
+| WHITE           |    3 | V Shirt        |      60 | VG     | ["XS"]     | ["WHITE"]              | { "__fire_ts_from_date__": "2024-11-13T12:00:28Z" } | __fire_ts_now__ |
 ```
 
 ## Operations Reference Table
