@@ -18,7 +18,7 @@ jobs:
               run: |
                   sudo apt-get update
                   sudo apt-get install -y jq python3-pip
-                  pip install pyyaml pandas
+                  pip install pyyaml pandas tabulate
 
             - name: Update README code blocks
               run: python3 scripts/update_readme.py
