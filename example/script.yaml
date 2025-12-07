@@ -42,7 +42,7 @@ operations:
 
   - type: group-collect
     group-by: F # column with BN (type column)
-    to-array-columns: [H, G] # colors and Sizes
+    to-array-columns: [H, G] # colors and sizes
     mark-unique-items: true # colors will not duplicate
     to-array-output-columns: [H, G] # write array back to color and size column
     do-maths-columns: [E]
