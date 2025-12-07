@@ -1,0 +1,73 @@
+name: Update README Sections
+
+on:
+    push:
+        paths:
+            - "example/*.{json,yaml,csv}"
+    workflow_dispatch:
+
+jobs:
+    update-readme:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Install dependencies
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y jq python3-pip
+                  pip install pyyaml pandas
+
+            - name: Update README code blocks
+              run: |
+                  python3 - <<'EOF'
+                    import re
+                    import json
+                    import yaml
+                    import pandas as pd
+
+                    # Load file contents
+                    with open('example/result.json') as f:
+                        json_content = json.dumps(json.load(f), indent=2)
+
+                    with open('example/result.yaml') as f:
+                        yaml_data = yaml.safe_load(f)
+                    yaml_content = json.dumps(yaml_data, indent=2)  # YAML as JSON format
+
+                    csv_df = pd.read_csv('example/result.csv')
+                    csv_content = csv_df.to_markdown(index=False)
+
+                    # Read README
+                    with open('README.md', 'r') as f:
+                        readme = f.read()
+
+                    # Replacement patterns
+                    patterns = {
+                        'json': json_content,
+                        'yaml': yaml_content,
+                        'csv': csv_content
+                    }
+
+                    def replace_code_block(content, lang, new_text):
+                        pattern = re.compile(
+                            rf'(```{lang}\n)(.*?)(```)', re.DOTALL
+                        )
+                        return pattern.sub(rf'\1{new_text}\n\3', content)
+
+                    for lang, new_text in patterns.items():
+                        readme = replace_code_block(readme, lang, new_text)
+
+                    # Write updated README
+                    with open('README.md', 'w') as f:
+                        f.write(readme)
+                    EOF
+
+            - name: Commit and push changes
+              run: |
+                  git config --global user.name "github-actions[bot]"
+                  git config --global user.email "github-actions[bot]@users.noreply.github.com"
+                  git add README.md
+                  git commit -m "Update README code blocks from JSON, YAML, CSV" || echo "No changes to commit"
+                  git push

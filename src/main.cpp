@@ -250,18 +250,38 @@ int main(int argc, char **argv)
         else if (op.type == "group-collect")
         {
             auto group_by_column = op.node["group-by"].as<std::string>();
-            auto collect_column = op.node["to-array-column"].as<std::string>();
-            auto output_column = op.node["to-array-output-column"].as<std::string>();
+            auto collect_columns = op.node["to-array-columns"];
+            auto output_columns = op.node["to-array-output-columns"];
             auto marked_unique = op.node["mark-unique-items"].as<bool>(false);
-            auto do_maths_column = op.node["do-maths-column"].as<std::string>();
-            auto do_maths_operation = op.node["do-maths-operation"].as<std::string>();
+            auto do_maths_columns = op.node["do-maths-columns"];
+            auto do_maths_operations = op.node["do-maths-operations"];
 
-            group_collect_nitro(sheet, col_to_index(group_by_column), col_to_index(collect_column), col_to_index(output_column), marked_unique, col_to_index(do_maths_column), do_maths_operation);
+            std::vector<std::size_t> collect_columns_indices;
+
+            for (const auto &t : collect_columns)
+                collect_columns_indices.push_back(col_to_index(t.as<std::string>()));
+
+            std::vector<std::size_t> output_columns_indices;
+
+            for (const auto &t : output_columns)
+                output_columns_indices.push_back(col_to_index(t.as<std::string>()));
+
+            std::vector<std::size_t> do_maths_columns_indices;
+
+            for (const auto &t : do_maths_columns)
+                do_maths_columns_indices.push_back(col_to_index(t.as<std::string>()));
+
+            std::vector<std::string> do_maths_ops;
+
+            for (const auto &t : do_maths_operations)
+                do_maths_ops.push_back(t.as<std::string>());
+
+            group_collect_nitro(sheet, col_to_index(group_by_column), collect_columns_indices, output_columns_indices, marked_unique, do_maths_columns_indices, do_maths_ops);
 
             msg = fmt::format(
                 GREEN "✔ " RESET YELLOW "group-collect-to" RESET
-                " (group=" CYAN "{}" RESET ", collect=" CYAN "{}" RESET ")",
-                group_by_column, collect_column
+                " (group=" CYAN "{}" RESET ")",
+                group_by_column
             );
         }
         else if (op.type == "reassign-numbering")

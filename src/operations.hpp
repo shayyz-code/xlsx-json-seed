@@ -74,11 +74,11 @@ void rename_header_nitro(
 void group_collect_nitro(
     NitroSheet &sheet,
     std::size_t group_col,
-    std::size_t collect_col,
-    std::size_t output_col,
+    const std::vector<std::size_t> &collect_cols,
+    const std::vector<std::size_t> &output_cols,
     bool marked_unique,
-    std::size_t do_maths_col,
-    const std::string &do_maths_operation
+    const std::vector<std::size_t> &do_maths_cols,
+    const std::vector<std::string> &do_maths_operations
 );
 
 void sort_rows_by_column_nitro(

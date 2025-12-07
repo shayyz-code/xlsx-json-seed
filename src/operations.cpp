@@ -555,94 +555,88 @@ void rename_header_nitro(
 void group_collect_nitro(
     NitroSheet &sheet,
     std::size_t group_col,
-    std::size_t collect_col,
-    std::size_t output_col,
+    const std::vector<std::size_t> &collect_cols,
+    const std::vector<std::size_t> &output_cols,
     bool marked_unique,
-    std::size_t do_maths_col,
-    const std::string &do_maths_operation)
+    const std::vector<std::size_t> &do_maths_cols = {},
+    const std::vector<std::string> &do_maths_operations = {}
+)
 {
-    if (sheet.cols.empty())
+    if (sheet.cols.empty() || collect_cols.size() != output_cols.size())
         return;
 
     std::string current_key;
-    std::vector<std::string> collected;
-
-    // temporary storage of numeric values for math ops
-    std::vector<double> math_values;
+    std::vector<std::vector<std::string>> collected(collect_cols.size());
+    std::vector<std::vector<double>> math_values(do_maths_cols.size());
 
     std::vector<bool> keep_row(sheet.num_rows, true);
-
     std::size_t first_row_index = 0;
 
     auto flush_group = [&](size_t first_row)
     {
-        // --- Build JSON array for collected column ---
-        std::string json = "[";
-        std::size_t collected_count_for_last_comma = collected.size();
-        bool add_comma = true;
-        for (size_t i = 0; i < collected.size(); ++i)
+        // --- Build JSON array for each collected/output column ---
+        for (size_t ci = 0; ci < collect_cols.size(); ++ci)
         {
-            if (marked_unique)
+            std::string json = "[";
+            bool first_item = true;
+            for (size_t i = 0; i < collected[ci].size(); ++i)
             {
-                // check if already exists in previous items
-                bool exists = false;
-                for (size_t j = 0; j < i; ++j)
+                if (marked_unique)
                 {
-                    if (collected[j] == collected[i])
-                    {
-                        exists = true;
-                        break;
-                    }
+                    bool exists = false;
+                    for (size_t j = 0; j < i; ++j)
+                        if (collected[ci][j] == collected[ci][i]) { exists = true; break; }
+                    if (exists) continue;
                 }
-                if (exists) continue; // skip duplicate
-                else if (i > 0 && json.size() > 1) json += ",";\
-            }
-            else if (i > 0 && json.size() > 1) json += ",";
 
-            if (collected[i].find('{') != std::string::npos ||
-                collected[i].find('[') != std::string::npos)
-            {
-                // assume already JSON formatted
-                json += collected[i];
+                if (!first_item) json += ",";
+                if (collected[ci][i].find('{') != std::string::npos ||
+                    collected[ci][i].find('[') != std::string::npos)
+                    json += collected[ci][i];
+                else
+                    json += "\"" + collected[ci][i] + "\"";
+
+                first_item = false;
             }
-            else
-                json += "\"" + collected[i] +  "\"";
+            json += "]";
+            sheet.cols[output_cols[ci]].vals[first_row] = json;
         }
-        json += "]";
-        sheet.cols[output_col].vals[first_row] = json;
 
-        // --- Perform Maths Operation ---
-        if (!do_maths_operation.empty() && !math_values.empty())
+        // --- Perform Maths Operations for each do_maths_col ---
+        for (size_t mi = 0; mi < do_maths_cols.size(); ++mi)
         {
-            double result = 0.0;
+            if (math_values[mi].empty()) continue;
 
-            if (do_maths_operation == "sum")
+            double result = 0.0;
+            const std::string &op = do_maths_operations[mi];
+
+            if (op == "sum")
             {
-                for (double v : math_values) result += v;
+                for (double v : math_values[mi]) result += v;
             }
-            else if (do_maths_operation == "avg")
+            else if (op == "avg")
             {
-                for (double v : math_values) result += v;
-                result /= math_values.size();
+                for (double v : math_values[mi]) result += v;
+                result /= math_values[mi].size();
             }
-            else if (do_maths_operation == "min")
+            else if (op == "min")
             {
-                result = *std::min_element(math_values.begin(), math_values.end());
+                result = *std::min_element(math_values[mi].begin(), math_values[mi].end());
             }
-            else if (do_maths_operation == "max")
+            else if (op == "max")
             {
-                result = *std::max_element(math_values.begin(), math_values.end());
+                result = *std::max_element(math_values[mi].begin(), math_values[mi].end());
             }
-            else if (do_maths_operation == "count")
+            else if (op == "count")
             {
-                result = static_cast<double>(math_values.size());
+                result = static_cast<double>(math_values[mi].size());
             }
             else
             {
-                throw std::runtime_error("Unknown maths operation: " + do_maths_operation);
+                throw std::runtime_error("Unknown maths operation: " + op);
             }
 
-            sheet.cols[do_maths_col].vals[first_row] = std::to_string(result);
+            sheet.cols[do_maths_cols[mi]].vals[first_row] = std::to_string(result);
         }
     };
 
@@ -650,49 +644,37 @@ void group_collect_nitro(
     for (std::size_t r = 0; r < sheet.num_rows; ++r)
     {
         const std::string &key = sheet.cols[group_col].vals[r];
-        const std::string &val = sheet.cols[collect_col].vals[r];
-        const std::string &math_val_str = sheet.cols[do_maths_col].vals[r];
 
-        if (r == 0)
+        if (r == 0 || key != current_key)
         {
+            if (r != 0) flush_group(first_row_index);
+
             current_key = key;
-            if (!val.empty()) collected.push_back(val);
-
-            if (!math_val_str.empty())
-            {
-                try {
-                    math_values.push_back(std::stod(math_val_str));
-                } catch (...) {}
-            }
-            continue;
-        }
-
-        if (key != current_key)
-        {
-            // flush previous group
-            flush_group(first_row_index);
-
-            // start new group
-            current_key = key;
-            collected.clear();
-            math_values.clear();
-
-            if (!val.empty()) collected.push_back(val);
-            if (!math_val_str.empty()) {
-                try { math_values.push_back(std::stod(math_val_str)); } catch (...) {}
-            }
-
             first_row_index = r;
+
+            // clear collected and math values
+            for (auto &v : collected) v.clear();
+            for (auto &v : math_values) v.clear();
         }
         else
         {
-            // same group → keep only first row
-            keep_row[r] = false;
+            keep_row[r] = false; // duplicate row
+        }
 
-            if (!val.empty()) collected.push_back(val);
+        // collect values for all collect_cols
+        for (size_t ci = 0; ci < collect_cols.size(); ++ci)
+        {
+            const std::string &val = sheet.cols[collect_cols[ci]].vals[r];
+            if (!val.empty()) collected[ci].push_back(val);
+        }
+
+        // collect numeric values for math operations
+        for (size_t mi = 0; mi < do_maths_cols.size(); ++mi)
+        {
+            const std::string &math_val_str = sheet.cols[do_maths_cols[mi]].vals[r];
             if (!math_val_str.empty())
             {
-                try { math_values.push_back(std::stod(math_val_str)); } catch (...) {}
+                try { math_values[mi].push_back(std::stod(math_val_str)); } catch (...) {}
             }
         }
     }
@@ -701,7 +683,7 @@ void group_collect_nitro(
     if (!collected.empty())
         flush_group(first_row_index);
 
-    // Pass 2: Physically remove duplicate rows
+    // Pass 2: physically remove duplicate rows
     size_t write_index = 0;
     for (size_t r = 0; r < sheet.num_rows; ++r)
     {
@@ -716,12 +698,12 @@ void group_collect_nitro(
         }
     }
 
-    // Resize all columns
     for (auto &col : sheet.cols)
         col.vals.resize(write_index);
 
     sheet.num_rows = write_index;
 }
+
 
 void sort_rows_by_column_nitro(
     NitroSheet &sheet,
