@@ -1,6 +1,5 @@
 import re
 import json
-import yaml
 import pandas as pd
 
 # Load file contents
@@ -8,9 +7,7 @@ with open('example/result.json') as f:
     json_content = json.dumps(json.load(f), indent=2)
 
 with open('example/script.yaml') as f:
-    yaml_data = yaml.safe_load(f)
-
-yaml_content = json.dumps(yaml_data, indent=2)  # Or keep YAML formatting if preferred
+    yaml_content = f.read()
 
 csv_df = pd.read_csv('example/result.csv')
 csv_content = csv_df.to_markdown(index=False)

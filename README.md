@@ -102,99 +102,79 @@ or
 _script.yaml_ and _input.xlsx_ can be found in [./example](./example).
 
 ```yaml
-{
-  "input": "example/input.xlsx",
-  "output": "example/result",
-  "header-row": 1,
-  "first-data-row": 2,
-  "export-csv": true,
-  "operations": [
-    {
-      "type": "split-column",
-      "column": "B",
-      "delimiter": "-",
-      "split-to": [
-        "E",
-        "F",
-        "G"
-      ],
-      "new-headers": [
-        "Code",
-        "Size",
-        "Color"
-      ],
-      "proper-positions": [
-        1,
-        2,
-        3
-      ]
-    },
-    {
-      "type": "fill-column",
-      "column": "H",
-      "fill-with": "firestore-random-past-date-n-year-2",
-      "new-header": "Created At"
-    },
-    {
-      "type": "add-column",
-      "at": "end",
-      "fill-with": "firestore-now",
-      "new-header": "Updated At"
-    },
-    {
-      "type": "add-column",
-      "at": "start",
-      "fill-with": "${ifcol F == GH ? 'gh and' : } ${col H}",
-      "new-header": "Dynamic Value"
-    },
-    {
-      "type": "sort-rows-by-column",
-      "column": "F",
-      "ascending": true
-    },
-    {
-      "type": "group-collect",
-      "group-by": "F",
-      "to-array-columns": [
-        "H",
-        "G"
-      ],
-      "mark-unique-items": true,
-      "to-array-output-columns": [
-        "H",
-        "G"
-      ],
-      "do-maths-columns": [
-        "E"
-      ],
-      "do-maths-operations": [
-        "sum"
-      ]
-    },
-    {
-      "type": "reassign-numbering",
-      "column": "B",
-      "prefix": "",
-      "suffix": ".",
-      "start-from": 1,
-      "step": 1
-    },
-    {
-      "type": "remove-column",
-      "column": "C"
-    },
-    {
-      "type": "rename-header",
-      "column": "G",
-      "new-name": "Colors"
-    },
-    {
-      "type": "transform-header",
-      "to": "snake_case",
-      "delimiter": " "
-    }
-  ]
-}
+input: "example/input.xlsx"
+output: "example/result"
+header-row: 1
+first-data-row: 2
+
+export-csv: true
+
+operations:
+  - type: split-column
+    column: B
+    delimiter: "-"
+    split-to: [E, F, G]
+    new-headers: ["Code", "Size", "Color"]
+    proper-positions: [1, 2, 3]
+
+  # - type: uppercase-column
+  #   column: G
+
+  # - type: replace-in-column
+  #   column: C
+  #   find: "-"
+  #   replace: ","
+
+  - type: fill-column
+    column: H
+    fill-with: "firestore-random-past-date-n-year-2"
+    new-header: "Created At"
+
+  - type: add-column
+    at: "end"
+    fill-with: "firestore-now"
+    new-header: "Updated At"
+
+  - type: add-column
+    at: "start"
+    fill-with: "${ifcol F == GH ? 'gh and' : } ${col H}" # fill with values from column F
+    new-header: "Dynamic Value"
+
+  - type: sort-rows-by-column
+    column: F
+    ascending: true
+
+  - type: group-collect
+    group-by: F # column with BN (type column)
+    to-array-columns: [H, G] # colors and sizes
+    mark-unique-items: true # colors will not duplicate
+    to-array-output-columns: [H, G] # write array back to color and size column
+    do-maths-columns: [E]
+    do-maths-operations: ["sum"]
+
+  - type: reassign-numbering
+    column: B
+    prefix: ""
+    suffix: "."
+    start-from: 1
+    step: 1
+
+  - type: remove-column
+    column: C
+
+  # - type: transform-row
+  #   row: 1
+  #   to: "camelCase"
+  #   delimiter: " "
+
+  - type: rename-header
+    column: G
+    new-name: "Colors"
+
+  - type: transform-header
+    to: "snake_case"
+    delimiter: " "
+
 ```
 
 ## Result
